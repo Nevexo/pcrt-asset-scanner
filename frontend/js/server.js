@@ -118,6 +118,8 @@ const main = async () => {
   const error_modal = new ErrorModal();
   const scan_modal = new ScanModal();
 
+  const status_text = document.getElementById("scan-status");
+
   const socket = await io(config.server);
 
   socket.on('connect', async () => {
@@ -138,6 +140,9 @@ const main = async () => {
     // Check scanner status
     if (!data.scanner_ready) {
       error_modal.show("bi bi-upc-scan", "Scanner Disconnected", "Please check the services and USB cables to ensure the scanner is connected.")
+    } else {
+      status_text.innerText = "Ready to Scan";
+      status_text.className = "text-success";
     }
   });
 
@@ -152,8 +157,12 @@ const main = async () => {
     
     if (status.status == "disconnected") {
       error_modal.show("bi bi-upc-scan", "Scanner Disconnected", "Please check the services and USB cables to ensure the scanner is connected.")
+      status_text.innerText = "Not Ready";
+      status_text.className = "text-danger";
     } else {
       error_modal.hide();
+      status_text.innerText = "Ready to Scan";
+      status_text.className = "text-success";
     }
   })
 

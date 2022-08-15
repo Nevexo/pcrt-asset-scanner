@@ -108,9 +108,6 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="scan-modal-label">Unknown Item</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
         </div>
         <div class="modal-body" id="scan-modal-body">
           <h6 id="scan-modal-owner">Owner: Test User (ID)</h6>
@@ -140,7 +137,22 @@
     </div>
   </div>
 
-
+  <nav class="navbar navbar-expand-lg bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">PCRT-Scan</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          
+        </ul>
+        <div class="d-flex">
+          <h5 id="scan-status" class="text-danger">Not Ready</h5>
+        </div>
+      </div>
+    </div>
+  </nav>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
   <script src="./js/server.js"></script>
