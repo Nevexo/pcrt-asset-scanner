@@ -5,7 +5,12 @@
 // Multiple instances are allowed to connect to the client socket, and will recieve broadcasts about system changes.
 
 const server = require('http').createServer();
-const io = require('socket.io')(server);
+const io = require('socket.io')(server, {
+  cors: {
+    origin: "http://localhost",
+    methods: ["GET", "POST"]
+  }
+});
 const events = require("events")
 
 class Client {
