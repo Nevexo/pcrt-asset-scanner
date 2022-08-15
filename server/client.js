@@ -33,15 +33,8 @@ class Client {
 
   async handle_connection(client) {
     this.logger.info("New frontend client has connected.")
-    this.emitter.emit("client_connected");
+    this.emitter.emit("client_connected", client);
     
-    // TODO: Maybe send colour of statuses to client?
-    client.emit("hello", {
-      "api_version": 1, 
-      "api_name": "pcrt_scanner",
-      "connect_time": new Date().toISOString()
-    });
-
     client.on('disconnect', () => {
       this.logger.info("Frontend client has disconnected")
       this.emitter.emit("client_disconnected");

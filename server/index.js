@@ -88,6 +88,16 @@ const main = async () => {
     }
   })
   
+  // Handle new scanner connecting
+  scanner.emitter.on("scanner_connected", async () => {
+    client.broadcast_message("scanner_status", {"status": "connected"})
+  });
+
+  // Handle scanner disconnecting
+  scanner.emitter.on("scanner_disconnected", async () => {
+    client.broadcast_message("scanner_status", {"status": "disconnected"})
+  });
+
   // Handle any other barcode entering the system from a scanner agent.
   scanner.emitter.on('barcode', async (code) => {
     const wo = await database.get_work_order(code).catch(error => {
@@ -233,6 +243,14 @@ const main = async () => {
   
   // Add handlers
   // TODO: This really needs tidying up into its own module.
+  client.emitter.on('client_connected', async (client) => {
+    client.emit("hello", {
+      "api_version": 1, 
+      "api_name": "pcrt_scanner",
+      "connect_time": new Date().toISOString(),
+      "scanner_ready": scanner.scanner_connected
+    });
+  })
 
 
   // If execution reaches this far, we can safely assume the server is up and running.
