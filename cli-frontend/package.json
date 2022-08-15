@@ -1,0 +1,14 @@
+{
+  "name": "cli-frontend",
+  "version": "1.0.0",
+  "description": "This is a test frontend for PCRT-Scan, it just dumps the information coming in from the socket.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "socket.io-client": "^4.5.1"
+  }
+}
