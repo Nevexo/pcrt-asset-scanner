@@ -8,3 +8,47 @@ database:
 ports:
   scanner_socket: 3000
   client_socket: 3500
+
+# Define the various boxstyles that should be handled by PCRT-Scan here.
+states:
+  1: 
+    name: storage
+    is_on_site: true
+    is_stored: true
+    work_in_progress: true
+  2: 
+    name: on_bench
+    is_on_site: true
+    is_stored: false
+    work_in_progress: true
+  3: 
+    name: pending_cust_response
+    is_on_site: true
+    is_stored: true
+    work_in_progress: false
+  4: 
+    name: complete
+    is_on_site: true
+    is_stored: true
+    work_in_progress: false
+  5:
+    name: collected
+    is_on_site: false
+    is_stored: false
+    work_in_progress: false
+  8: 
+    name: data_transfer
+    is_on_site: true
+    is_stored: false
+    work_in_progress: true
+  101: 
+    name: awaiting_parts
+    is_on_site: true
+    is_stored: true
+    work_in_progress: true
+
+stoage_locations:
+  # The wip_prefix and complete_prefix set a prefix for the slname, i.e., if a job is WIP it will go into a storage
+  # bay prefixed with wip_prefix.
+  wip_prefix: A
+  complete_prefix: B
