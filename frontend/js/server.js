@@ -182,6 +182,10 @@ const main = async () => {
 
     error_modal.show("bi bi-exclamation-triangle-fill", error.error, error.message);
   })
+
+  socket.on('info', async (info) => {
+    await toast.show("Server Info", info.message, info.type);
+  })
 }
 
 main();
