@@ -1,0 +1,10 @@
+database:
+  host: 10.5.0.1
+  port: 3306
+  user: sql_user
+  password: sql_pass
+  database: sql_db
+
+ports:
+  scanner_socket: 3000
+  client_socket: 3500

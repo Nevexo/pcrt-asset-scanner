@@ -1,0 +1,18 @@
+{
+  "name": "pcrt-as-server",
+  "version": "1.0.0",
+  "description": "The backend to the PCRT Asset Scanning system",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Cameron Fleming <cameron@triarom.co.uk>",
+  "license": "MIT",
+  "dependencies": {
+    "mysql": "^2.18.1",
+    "promise-mysql": "^5.2.0",
+    "socket.io": "^4.5.1",
+    "winston": "^3.8.1",
+    "yaml": "^2.1.1"
+  }
+}
