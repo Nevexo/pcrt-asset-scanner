@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+
+  <!-- Socket.io -->
+  <script src="https://cdn.socket.io/4.5.0/socket.io.min.js" integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k" crossorigin="anonymous"></script>
+
+  <title>PCRT Asset Scanner</title>
+</head>
+<body>
+  <!-- Toast Message -->
+    <div class="toast-container bottom-0 end-0 p-3" id="toastPlacement">
+      <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="toast-alert">
+        <div class="toast-header">
+          <strong class="me-auto" id="toast-alert-title">Toast Alert</strong>
+          <small id="toast-alert-small"></small>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toast-alert-body">
+          Hello, world! This is a toast message.
+        </div>
+      </div>
+    </div>
+
+  <!-- Loading Animation Modal -->
+  <div class="modal fade" data-backdrop="static" id="loading-modal" tabindex="-1" role="dialog" aria-labelledby="loading-modal-label" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-body">
+          <div class="container text-center">
+            <div class="row">
+              <div class="col">
+                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <h3 id="loading-modal-text">Thinking about it...</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Modal -->
+  <!-- Non-dismissable modal for warnings, shows a large icon and the error. -->
+  <div class="modal fade" data-backdrop="static" id="error-modal" tabindex="-1" role="dialog" aria-labelledby="error-modal-label" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-body">
+          <div class="container text-center">
+            <div class="row">
+              <div class="col">
+                <h1><i id="error-modal-icon" class="bi bi-exclamation-triangle-fill"></i></h1>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <h3 id="error-modal-heading">Something Went Wrong</h3>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <p id="error-modal-text">Something is very wrong here...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Information Modal -->
+  <div class="modal fade" id="info-modal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="info-modal-title">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="info-modal-body">
+          <p>Modal body text goes here.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New scanned item modal -->
+  <div class="modal fade modal-xl" id="scan-modal" tabindex="-1" role="dialog" aria-labelledby="scan-modal-label" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="scan-modal-label">Unknown Item</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" id="scan-modal-body">
+          <h6 id="scan-modal-owner">Owner: Test User (ID)</h6>
+          <p id="scan-modal-current-status">Work Order Status: </p>
+          <hr>
+          <h5>Work Order Problem</h5>
+          <p id="scan-modal-problem">Device Problem Placeholder...</p>
+          <hr>
+          <div class="container" id="scan-modal-actions">
+            <div class="row">
+              <div class="col">
+                <button type="button" class="btn btn-block btn-primary">Moving to Bench</button>
+              </div>
+              <div class="col">
+                <button type="button" class="btn btn-block btn-warning">Moving for Data Transfer</button>
+              </div>
+              <div class="col">
+                <button type="button" class="btn btn-block btn-danger">Destroying Device</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+  <script src="./js/server.js"></script>
+</body>
+</html>
