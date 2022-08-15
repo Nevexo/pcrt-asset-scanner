@@ -1,4 +1,5 @@
 // PCRT Scanner - Scanner -> Agent interface
+// Triarom Engineering (c) 2022
 
 const server = require('http').createServer();
 const io = require('socket.io')(server);
