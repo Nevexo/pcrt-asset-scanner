@@ -27,6 +27,11 @@ const main = async () => {
   let scanner_port;
 
   for (const port of ports) {
+    console.log(`port ${port.path} - vendor: ${port.manufacturer}`)
+    if (port.path == process.env.PORT_OVERRIDE) {
+      scanner_port = port;
+      break;
+    }
     if (port.manufacturer == "TMS")
     {
       scanner_port = port;
