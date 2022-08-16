@@ -244,12 +244,15 @@ const main = async () => {
   // Add handlers
   // TODO: This really needs tidying up into its own module.
   client.emitter.on('client_connected', async (client) => {
-    client.emit("hello", {
+    await client.emit("hello", {
       "api_version": 1, 
       "api_name": "pcrt_scanner",
       "connect_time": new Date().toISOString(),
       "scanner_ready": scanner.scanner_connected
     });
+
+    // Send the client the current storage state.
+    await client.emit("storage_state", await database.get_storage_statues());
   })
 
   // If execution reaches this far, we can safely assume the server is up and running.

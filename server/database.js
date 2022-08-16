@@ -80,9 +80,19 @@ class Database {
     let locations = {}
     for (let bay in result) {
       bay = result[bay]
-      locations[bay.bayid] = {
+      // Find the type of storage location this is from the prefix
+      let type = undefined;
+      for (let prefix in this.config.storage_prefixes) {
+        if (bay.slname.startsWith(this.config.storage_prefixes[prefix])) {
+          type = prefix;
+          break;
+        }
+      }
+
+      locations[bay.slid] = {
         "id": bay.slid,
-        "name": bay.slname
+        "name": bay.slname,
+        "type": type
       }
     }
     
@@ -115,6 +125,7 @@ class Database {
 
   async format_work_order(wo) {
     const states = await this.get_asset_states();
+    const locations = await this.get_storage_locations()
 
     let work_order = {
       "id": wo.woid,
@@ -122,7 +133,7 @@ class Database {
       "problem": wo.probdesc,
       "status": states[wo.pcstatus.toString()] || wo.pcstatus || undefined,
       "open_date": new Date(wo.dropdate).toISOString(),
-      "location": this.get_storage_locations()[wo.bayid] || undefined,
+      "location": locations[wo.slid] || undefined,
     }
     return work_order
   }
@@ -184,6 +195,38 @@ class Database {
 
     return work_orders
   }
+
+  async get_storage_statues() {
+    // Get the storage status for each bay.
+    const open_work_orders = await this.get_open_work_orders();
+    const locations = await this.get_storage_locations();
+    let storage_status = [];
+  
+    for (let location in locations) {
+      // Check if a work order is in this location
+      location = locations[location];
+
+      let work_order = undefined;
+      for (const wo in open_work_orders) {
+        if (open_work_orders[wo].location == undefined) continue; // Skip if no location set
+
+        // Check if the work order is in this location
+        if (open_work_orders[wo].location.id == location.id) {
+          work_order = open_work_orders[wo];
+          break;
+        }
+      }
+
+      // Add the location to the storage status
+      storage_status.push({
+        "id": location.id,
+        "name": location.name,
+        "work_order": work_order
+      })
+    }
+  
+    return storage_status;
+  };
 
   async get_customer(pcid) {
     // Get a customer from it's ID, usually from a work order.

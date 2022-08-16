@@ -33,6 +33,16 @@ const main = async () => {
     console.log(message.message)
     console.log("--------------------")
   })
+
+  socket.on('storage_state', (bays) => {
+    console.log(`---- STORAGE STATE ----`)
+    console.dir(bays)
+    for (const bay in bays) {
+      if (bays[bay].work_order == undefined) continue;
+      console.dir(bays[bay].work_order.location)
+    }
+    console.log("--------------------")
+  })
 }
 
 console.log("PCRT-Scan - CLI frontend tool.")
