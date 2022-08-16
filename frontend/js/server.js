@@ -37,15 +37,20 @@ class InfoModal {
     this.title = document.getElementById("info-modal-title");
     this.body = document.getElementById("info-modal-body");
     this.modal = new bootstrap.Modal("#info-modal");
+    this.visible = false;
   }
 
   async show(title, body) {
     this.title.innerHTML = title;
     this.body.innerHTML = body;
     await this.modal.show()
+    this.visible = true;
   };
 
-  async hide() {await this.modal.hide()};
+  async hide() {
+    if (this.visible) await this.modal.hide()
+    this.visible = false;
+  };
 }
 
 class ErrorModal {
@@ -54,6 +59,7 @@ class ErrorModal {
     this.heading = document.getElementById("error-modal-heading");
     this.text = document.getElementById("error-modal-text");
     this.modal = new bootstrap.Modal("#error-modal");
+    this.visible = false;
   }
 
   async show(icon, heading, text) {
@@ -61,9 +67,13 @@ class ErrorModal {
     this.heading.innerHTML = heading;
     this.text.innerHTML = text;
     await this.modal.show({'backdrop': 'static', 'keyboard': false})
+    this.visible = true;
   };
 
-  async hide() {await this.modal.hide()};
+  async hide() {
+    if (this.visible) await this.modal.hide()
+    this.visible = false;
+  };
 }
 
 class ToastAlert {
@@ -94,6 +104,7 @@ class ScanModal {
     }
     this.buttons = document.getElementById("scan-modal-actions");
     this.modal = new bootstrap.Modal("#scan-modal");
+    this.visible = false;
   }
 
   async show(scan_data) {
@@ -106,9 +117,13 @@ class ScanModal {
     this.items.problem.innerHTML = `${work_order.problem}`;
 
     this.modal.show({'backdrop': 'static', 'keyboard': false});
+    this.visible = true;
   }
 
-  async hide() {await this.modal.hide()};
+  async hide() {
+    if (this.visible) await this.modal.hide()
+    this.visible = false;
+  };
 }
 
 const main = async () => {
@@ -170,13 +185,11 @@ const main = async () => {
     console.log("Scan data:", data);
     error_modal.hide();
     loading_modal.hide();
-    scan_modal.hide();
 
     scan_modal.show(data);
   })
 
   socket.on('server_error', async (error) => {
-    error_modal.hide();
     loading_modal.hide();
     scan_modal.hide();
 
