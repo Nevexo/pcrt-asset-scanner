@@ -52,3 +52,6 @@ stoage_locations:
   # bay prefixed with wip_prefix.
   wip_prefix: A
   complete_prefix: B
+
+  # Any small devices will be assigned a storage bay automatically, larger devices may not have a specified location.
+  small_devices: [laptop]

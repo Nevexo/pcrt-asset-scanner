@@ -39,6 +39,16 @@ class Client {
       this.logger.info("Frontend client has disconnected")
       this.emitter.emit("client_disconnected");
     })
+
+    client.on('work_order_update', (wo_changes) => {
+      this.logger.debug("Frontend client has requesed work order update: " + wo_changes.toString());
+      this.emitter.emit("work_order_update", wo_changes);
+    })
+
+    client.on('request_refresh', () => {
+      this.logger.debug("Frontend client has requested refresh");
+      this.emitter.emit("refresh_dashboard");
+    })
   }
 
   async broadcast_message(topic, message) {
