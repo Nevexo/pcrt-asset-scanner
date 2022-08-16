@@ -138,7 +138,7 @@ const main = async () => {
       logger.error(`Work order ${wo.id} is in completed state.`);
       client.broadcast_message("server_error", {
         "error": "old_work_order",
-        "message": `Work order ${wo.id} is in completed state. If you have just checked this device in, please make sure to replace it's asset labels before storing, alternatively, you can set the work order status to open on PCRT.`
+        "message": `Work order ${wo.id} is in collected state. If you have just checked this device in, please make sure to replace it's asset labels before storing, alternatively, you can set the work order status to open on PCRT.`
       });
 
       return;
@@ -251,7 +251,6 @@ const main = async () => {
       "scanner_ready": scanner.scanner_connected
     });
   })
-
 
   // If execution reaches this far, we can safely assume the server is up and running.
   logger.info("PCRT Scanner Server started")
