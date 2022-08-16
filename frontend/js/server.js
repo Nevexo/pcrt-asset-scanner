@@ -189,6 +189,10 @@ const main = async () => {
     scan_modal.show(data);
   })
 
+  socket.on('storage_state', async (storage_bays) => {
+    //
+  })
+
   socket.on('server_error', async (error) => {
     loading_modal.hide();
     scan_modal.hide();
