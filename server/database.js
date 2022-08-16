@@ -199,7 +199,7 @@ class Database {
       "id": cust.pcid,
       "name": cust.pcname,
       "device": cust.pcmake,
-      "company": cust.company || "Individual"
+      "company": cust.pccompany || "Individual"
     }
 
     return customer;
