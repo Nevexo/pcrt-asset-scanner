@@ -11,11 +11,9 @@ const gen_grid = (entries) => {
     // Create a new row in the table
     row = entries[row]
     html += row_div_html;
-    console.dir(row)
 
     for (let col in row) {
       col = row[col]
-      console.dir(col)
       // Create a new col and card for this cell.
       html += col_div_html;
 
@@ -44,6 +42,20 @@ const gen_grid = (entries) => {
         sub_text_style = "text-light";
         title_text_style = "text-white";
         bi_icon = "bi-check-square-fill"
+      }
+
+      if (col['status'] == "customer") {
+        style = "card-body bg-warning";
+        sub_text_style = "text-light";
+        title_text_style = "text-white";
+        bi_icon = "bi-person-fill"
+      }
+
+      if (col['status'] == "parts") {
+        style = "card-body bg-warning";
+        sub_text_style = "text-light";
+        title_text_style = "text-white";
+        bi_icon = "bi-basket-fill"
       }
 
       html += `<div class='card'><div class='${style}'>`;

@@ -255,6 +255,160 @@ const main = async () => {
     await client.emit("storage_state", await database.get_storage_statues());
   })
 
+  client.emitter.on("refresh_storage", async (client_instance) => {
+    // Client requested a refresh of the storage view.
+    await client_instance.emit("storage_state", await database.get_storage_statues())
+  })
+
+  client.emitter.on("apply_action", async (data) => {
+    const calling_client = data['client'];
+    const action_request = data['data'];
+    const woid = action_request['work_order'];
+    const action_id = action_request['action_id'];
+
+    // Attempt to resolve the work order
+    const work_order = await database.get_work_order(woid).catch(async (error) => {
+      logger.error(`Error fetching work order ${woid} - ${error}`)
+      await calling_client.emit("server_error", {error: error, message: "No message available."});
+      return;
+    });
+    if (!work_order) {
+      logger.error(`Failed to get work order ${woid} - aborting action request.`);
+      await calling_client.emit("server_error", {
+        "error": "action_request_failed",
+        "message": "The server failed to perform the requested action - this is likely a problem with the network or server. Check the logs."
+      })
+      return;
+    }
+
+    // Find PCRT state ID for the requested action
+    let pcrt_state = undefined;
+    let state_stored = undefined;
+    let state_wip = undefined;
+    let state_extra_alert = undefined;
+    for (const state_id in config['states']) {
+      const state = config['states'][state_id]
+      if (state['name'] == action_id) {
+        pcrt_state = state_id;
+        state_stored = state['is_stored'];
+        state_wip = state['work_in_progress'];
+        state_extra_alert = state['extra_alert'];
+      }
+    }
+
+    if (!pcrt_state) {
+      // Failed to resolve a state, this ia a major fault.
+      logger.error(`Failed to resolve ${action_id} to a PCRT state, this is likely a configuration error.`)
+      await calling_client.emit("server_error", {
+        "error": "state_resolution_failed",
+        "message": "The server failed to find a valid PCRT state for this action request and was unable to apply the action - this is a critical error, please contact the system administrator."
+      })
+      return;
+    }
+
+    // Check storage location if this state requires storage.
+    let location = work_order.location;
+    if (location) logger.debug(`current location: ${location.name}`);
+    logger.debug(`is going to be stored: ${state_stored} | is wip: ${state_wip}`)
+
+    let valid_location = true;
+    // See if we need to change the location of this device.
+    if (work_order.location != undefined) {
+      if (state_wip && work_order.location.type != "wip") valid_location = false;
+      if (!state_wip && work_order.location.type == "wip") valid_location = false;
+
+      // Ignore oversize devices, these use the same bay whether WIP or complete.
+      if (work_order.location.type == "oversize") valid_location = true;
+    }
+
+    if (state_stored) {
+      if (work_order.location == undefined || !valid_location) {
+        // No location is set or it is invalid given this change (i.e., wip -> complete)
+        // A new location will be assigned.
+        const all_locations = await database.get_storage_locations();
+        const asset_locations = await database.get_open_work_orders();
+
+        let potential_locations = [];
+        for (let location in all_locations) {
+          location = all_locations[location]
+
+          logger.debug(`considering ${location.name} (${location.type}) for storage:${state_stored}, wip:${state_wip}`)
+
+          // TODO: Handle this dynamically.
+          if (state_wip && location.type != "wip") continue;
+          if (!state_wip && location.type != "complete") continue;
+          if (location.type == "oversize") continue;
+          
+          logger.debug(`consideration for ${location.name} continued, checking asset location.`)
+
+          // Check the location is not in use by another WO
+          if (await database.get_work_order_by_location(location.id) != undefined) continue;
+
+          logger.debug(`${location.name} considered for storage of this asset`)
+
+          // TODO: Potentially abort the check now we have found a bay?
+
+          // Add this location to the potentials list
+          potential_locations.push(location);
+        }
+
+        if (potential_locations.length == 0) {
+          logger.error("no potential locations available.");
+          await client.broadcast_message("server_error", {
+            "error": "no_storage_locations",
+            "message": "The server couldn't find a potential storage location for this asset, please set it manually in PCRT and re-scan."
+          })
+          return;
+        }
+
+        location = potential_locations[0];
+        // Update the location in the database
+        const result = await database.set_work_order_location(woid, location['id']);
+        if (!result) {
+          logger.error("failed to update work order storage location");
+          await client.broadcast_message("server_error", {
+            "error": "location_change_failed",
+            "message": "The server failed to update the storage location, please check the log, update it manually and re-scan."
+          });
+          return;
+        }
+      }
+    }
+    
+
+    // PCRT state has been resolved to a work order, the change can be applied to the database.
+    const result = await database.set_work_order_state(woid, pcrt_state);
+
+    if (!result) {
+      logger.error("Failed to update state.");
+      await calling_client.emit("server_error", {
+        "error": "commit_failed",
+        "message": "Failed to apply action to database, please see the log."
+      });
+      return;
+    }
+
+    // Emit acknolodgement and update the storage states.
+    await client.broadcast_message("storage_state", await database.get_storage_statues())
+    let ack_operand = {"location": location};
+    
+    if (location != work_order.location) {
+      ack_operand['location_changed'] = true;
+    }
+
+    if (state_stored) {
+      // Triggers the storage location prompt as the device is returning to storage.
+      ack_operand['location_info_required'] = true;
+    }
+    
+    if (state_extra_alert && !ack_operand['location_inf0_required']) {
+      // Trigger an extra modal with a warning message present.
+      ack_operand['alert'] = state_extra_alert;
+    }
+
+    await client.broadcast_message("ack_action", ack_operand);
+  })
+
   // If execution reaches this far, we can safely assume the server is up and running.
   logger.info("PCRT Scanner Server started")
   logger.info(`Listening for scanner agents on port ${config.ports.scanner_socket}`)

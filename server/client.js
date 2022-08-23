@@ -11,7 +11,7 @@ const io = require('socket.io')(server, {
     methods: ["GET", "POST"]
   }
 });
-const events = require("events")
+const events = require("events");
 
 class Client {
   constructor(logger, config) {
@@ -47,7 +47,17 @@ class Client {
 
     client.on('request_refresh', () => {
       this.logger.debug("Frontend client has requested refresh");
-      this.emitter.emit("refresh_dashboard");
+      // Forwards the client so the response can be sent directly.
+      this.emitter.emit("refresh_storage", client);
+    })
+
+    client.on("apply_action", async (data) => {
+      this.logger.debug("Processing action request...");
+      // Forward to main handler.
+      this.emitter.emit("apply_action", {
+        "client": client,
+        "data": data
+      })
     })
   }
 

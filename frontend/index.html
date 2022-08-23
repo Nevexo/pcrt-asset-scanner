@@ -118,21 +118,7 @@
           <hr>
           <div class="container" id="scan-modal-actions">
             <div class="row">
-              <div class="col">
-                <div class="btn-group" style="width:100%">
-                  <button type="button" class="btn btn-block btn-primary"><i class="bi bi-screwdriver"></i> Moving to Bench</button>
-                </div>
-              </div>
-              <div class="col">
-                <div class="btn-group" style="width:100%">
-                  <button type="button" class="btn btn-block btn-warning"><i class="bi bi-device-hdd-fill"></i> Moving for Data Transfer</button>
-                </div>
-              </div>
-              <div class="col">
-                <div class="btn-group" style="width:100%">
-                  <button type="button" class="btn btn-block btn-danger"><i class="bi bi-fire"></i> Destroying Device</button>
-                </div>
-              </div>
+              <p>No actions available, something is very wrong here.</p>
             </div>
           </div>
         </div>
@@ -187,6 +173,53 @@
     </div>
   </nav>
 
+  <div class="conatiner">
+    <nav class="navbar navbar-light bg-light">
+      <div class="container-fluid">
+        <span class="navbar-text">
+          <i class="bi bi-tools"></i> - Waiting for Bench
+        </span>
+        <span class="navbar-text">
+          <i class="bi bi-app-indicator"></i> - Bay Reserved (on the bench)
+        </span>
+        <span class="navbar-text">
+          <i class="bi bi-check-square-fill"></i> - Ready to Collect
+        </span>
+        <span class="navbar-text">
+          <i class="bi bi-app"></i> - Bay Available
+        </span>
+        <span class="navbar-text">
+          <i class="bi bi-person-fill"></i> - Pending Customer Response
+        </span>
+        <span class="navbar-text">
+          <i class="bi bi-basket-fill"></i> - Waiting for Parts
+        </span>
+        <span class="navbar-text">
+          <button class="btn btn-outline-success me-2" type="button" onclick="request_refresh(); return true;">Refresh</button>
+        </span>
+      </div>
+    </nav>
+  </div>
+
+  <div class="container" id="grid-data-pending">
+    <div class="card">
+      <h5 class="card-header">PCRT-Scan</h5>
+      <div class="card-body">
+        <h5 class="card-title">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+
+            Data Pending...
+        </h5>
+        <p class="card-text">
+          Please wait while the database connects, this may take a moment.<br>
+          If this message does not clear, please check all services and network connections are available
+          and restart PCRT-Scan.
+        </p>
+      </div>
+    </div>
+  </div>
   <div class="container" id="grid">
     <!-- Too be filled by gridgen -->
   </div>
@@ -198,85 +231,11 @@
   </div>
   
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
-  <script src="./js/server.js"></script>
   <script src="./js/gridgen.js"></script>
+  <script src="./js/server.js"></script>
 
   <script>
-    const entries = [
-      [
-        {"status": "free", "bay_status": "Available", "title": "A1"},
-        {"status": "wip", "bay_status": "Cameron Fleming", "title": "A2"},
-        {"status": "free", "bay_status": "Available", "title": "A3"},
-        {"status": "free", "bay_status": "Available", "title": "A4"},
-      ],
-      [
-        {"status": "free", "bay_status": "Available", "title": "A5"},
-        {"status": "free", "bay_status": "Available", "title": "A6"},
-        {"status": "free", "bay_status": "Available", "title": "A7"},
-        {"status": "complete", "bay_status": "Morgan Freeman", "title": "A8"},
-      ],
-      [
-        {"status": "free", "bay_status": "Available", "title": "A9"},
-        {"status": "free", "bay_status": "Available", "title": "A10"},
-        {"status": "free", "bay_status": "Available", "title": "A11"},
-        {"status": "free", "bay_status": "Available", "title": "A12"},
-      ],
-
-      [
-        {"status": "free", "bay_status": "Available", "title": "B1"},
-        {"status": "wip", "bay_status": "Cameron Fleming", "title": "B2"},
-        {"status": "free", "bay_status": "Available", "title": "B3"},
-        {"status": "free", "bay_status": "Available", "title": "B4"},
-      ],
-      [
-        {"status": "free", "bay_status": "Available", "title": "B5"},
-        {"status": "free", "bay_status": "Available", "title": "B6"},
-        {"status": "free", "bay_status": "Available", "title": "B7"},
-        {"status": "complete", "bay_status": "Morgan Freeman", "title": "B8"},
-      ],
-      [
-        {"status": "free", "bay_status": "Available", "title": "B9"},
-        {"status": "free", "bay_status": "Available", "title": "B10"},
-        {"status": "free", "bay_status": "Available", "title": "B11"},
-        {"status": "free", "bay_status": "Available", "title": "B12"},
-      ],
-      [
-        {"status": "bench", "bay_status": "Available", "title": "O1"},
-        {"status": "free", "bay_status": "Available", "title": "O2"},
-        {"status": "free", "bay_status": "Available", "title": "O3"},
-        {"status": "free", "bay_status": "Available", "title": "O4"},
-        {"status": "free", "bay_status": "Available", "title": "O5"},
-
-      ]
-    ]
-    document.getElementById("grid").innerHTML = gen_grid(entries);
-
-    const entries_modal = [
-    [
-        {"status": "free", "bay_status": "", "title": "A1"},
-        {"status": "free", "bay_status": "", "title": "A2"},
-        {"status": "free", "bay_status": "", "title": "A3"},
-        {"status": "free", "bay_status": "", "title": "A4"},
-      ],
-      [
-        {"status": "free", "bay_status": "", "title": "A5"},
-        {"status": "complete", "bay_status": "Use this bay", "title": "A6"},
-        {"status": "free", "bay_status": "", "title": "A7"},
-        {"status": "free", "bay_status": "", "title": "A8"},
-      ],
-      [
-        {"status": "free", "bay_status": "", "title": "A9"},
-        {"status": "free", "bay_status": "", "title": "A10"},
-        {"status": "free", "bay_status": "", "title": "A11"},
-        {"status": "free", "bay_status": "", "title": "A12"},
-      ],
-    ]
-
-    document.getElementById("test-modal-container").innerHTML = gen_grid(entries_modal);
-
-    const modal = new bootstrap.Modal("#test-modal")
-    modal.show();
-
+    
   </script>
 </body>
 </html>

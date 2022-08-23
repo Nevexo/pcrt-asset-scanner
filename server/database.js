@@ -138,6 +138,16 @@ class Database {
     return work_order
   }
 
+  async get_work_order_by_location(slid) {
+    // Get work order from storage location
+    this.logger.debug(`getting work order in location ${slid}`)
+    const result = await this.connection.query(`SELECT * FROM pc_wo WHERE slid = ${mysql.escape(slid)}`);
+
+    if (result.length == 0) return undefined;
+
+    return this.format_work_order(result[0]);
+  }
+
   async get_work_order(woid) {
     // Get a work order from it's ID, as scanned by the scanner.
     this.logger.debug(`getting work order ${woid}`)
@@ -196,6 +206,30 @@ class Database {
     return work_orders
   }
 
+  async set_work_order_state(woid, state_id) {
+    // Set a work order to a new PCRT state. 
+    this.logger.debug(`setting ${woid} to state: ${state_id}`)
+
+    await this.connection.query(`UPDATE pc_wo SET pcstatus = ${mysql.escape(state_id)} WHERE woid = ${mysql.escape(woid)}`).catch(error => {
+      this.logger.error(error);
+      return false;
+    });
+    
+    return true;
+  }
+
+  async set_work_order_location(woid, slid) {
+    // Set a work order to a new location by slid.
+    this.logger.debug(`setting ${woid} location to ${slid}`)
+
+    await this.connection.query(`UPDATE pc_wo SET slid = ${mysql.escape(slid)} WHERE woid = ${mysql.escape(woid)}`).catch(error => {
+      this.logger.error(error);
+      return false;
+    });
+
+    return true;
+  }
+
   async get_storage_statues() {
     // Get the storage status for each bay.
     const open_work_orders = await this.get_open_work_orders();
@@ -221,6 +255,7 @@ class Database {
       storage_status.push({
         "id": location.id,
         "name": location.name,
+        "location_type": location.type,
         "work_order": work_order
       })
     }

@@ -13,36 +13,44 @@ ports:
 states:
   1: 
     name: storage
+    alias: Check-in to Storage
     is_on_site: true
     is_stored: true
     work_in_progress: true
   2: 
     name: on_bench
+    alias: Moving to Bench
     is_on_site: true
     is_stored: false
     work_in_progress: true
   3: 
     name: pending_cust_response
+    alias: Waiting for Customer
     is_on_site: true
     is_stored: true
-    work_in_progress: false
+    work_in_progress: true
   4: 
     name: complete
+    alias: Completed
     is_on_site: true
     is_stored: true
     work_in_progress: false
+    extra_alert: "Please ensure the repair report is complete, printed and given to the customer. Check all assets are returned to the user and no company USB devices are left in the device."
   5:
     name: collected
+    alias: Collected
     is_on_site: false
     is_stored: false
     work_in_progress: false
   8: 
     name: data_transfer
+    alias: Move to Bench (Data Transfer)
     is_on_site: true
     is_stored: false
     work_in_progress: true
   101: 
     name: awaiting_parts
+    alias: Waiting for Parts
     is_on_site: true
     is_stored: true
     work_in_progress: true
