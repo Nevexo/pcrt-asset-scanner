@@ -23,21 +23,31 @@ const gen_grid = (entries) => {
       let style = "card-body";
       let sub_text_style = "text-muted";
       let title_text_style = "";
+      let bi_icon = "bi-app"
       
       if (col['status'] == "wip") {
         style = "card-body bg-primary";
         sub_text_style = "text-light";
         title_text_style = "text-white";
+        bi_icon = "bi-tools"
       } 
+
+      if (col['status'] == "bench") {
+        style = "card-body bg-secondary";
+        sub_text_style = "text-light";
+        title_text_style = "text-white";
+        bi_icon = "bi-app-indicator"
+      }
 
       if (col['status'] == "complete") {
         style = "card-body bg-success";
         sub_text_style = "text-light";
         title_text_style = "text-white";
+        bi_icon = "bi-check-square-fill"
       }
 
       html += `<div class='card'><div class='${style}'>`;
-      html += `<div class='card-title ${title_text_style}'><i class='bi ${col['bi_icon']}'></i> ${col['title']}</div>`;
+      html += `<div class='card-title ${title_text_style}'><i class='bi ${bi_icon}'></i> ${col['title']}</div>`;
       html += `<div class='card-subtitle mb-2 ${sub_text_style}'>${col['bay_status']}</div>`;
       html += '</div></div></div>' // TODO: Do that better...
     }

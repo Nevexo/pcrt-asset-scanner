@@ -140,10 +140,34 @@
           <div class="alert alert-warning" role="alert">
             <i class="bi bi-exclamation-triangle-fill"></i> Additional options are only available in PCRT.
           </div>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
         </div>
       </div>
     </div>
   </div>
+
+<!-- Test Modal -->
+
+  <div class="modal fade modal-xl" id="test-modal" tabindex="-1" role="dialog" aria-labelledby="test-modal-label" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h5 class="modal-title text-white" id="test-modal-label">Test Modal</h5>
+        </div>
+        <div class="modal-body" id="scan-modal-body">
+          <div class="conatiner" id="test-modal-container"></div>
+        </div>
+        <div class="modal-footer">
+          <div class="alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> Additional options are only available in PCRT.
+          </div>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <nav class="navbar navbar-expand-lg bg-dark">
     <div class="container-fluid">
@@ -179,52 +203,79 @@
   <script>
     const entries = [
       [
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "A1"},
-        {"status": "wip", "bi_icon": "bi-tools", "bay_status": "Cameron Fleming", "title": "A2"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "A3"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "A4"},
+        {"status": "free", "bay_status": "Available", "title": "A1"},
+        {"status": "wip", "bay_status": "Cameron Fleming", "title": "A2"},
+        {"status": "free", "bay_status": "Available", "title": "A3"},
+        {"status": "free", "bay_status": "Available", "title": "A4"},
       ],
       [
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "A5"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "A6"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "A7"},
-        {"status": "complete", "bi_icon": "bi-check-square-fill", "bay_status": "Morgan Freeman", "title": "A8"},
+        {"status": "free", "bay_status": "Available", "title": "A5"},
+        {"status": "free", "bay_status": "Available", "title": "A6"},
+        {"status": "free", "bay_status": "Available", "title": "A7"},
+        {"status": "complete", "bay_status": "Morgan Freeman", "title": "A8"},
       ],
       [
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "A9"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "A10"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "A11"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "A12"},
+        {"status": "free", "bay_status": "Available", "title": "A9"},
+        {"status": "free", "bay_status": "Available", "title": "A10"},
+        {"status": "free", "bay_status": "Available", "title": "A11"},
+        {"status": "free", "bay_status": "Available", "title": "A12"},
       ],
 
       [
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "B1"},
-        {"status": "wip", "bi_icon": "bi-tools", "bay_status": "Cameron Fleming", "title": "B2"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "B3"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "B4"},
+        {"status": "free", "bay_status": "Available", "title": "B1"},
+        {"status": "wip", "bay_status": "Cameron Fleming", "title": "B2"},
+        {"status": "free", "bay_status": "Available", "title": "B3"},
+        {"status": "free", "bay_status": "Available", "title": "B4"},
       ],
       [
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "B5"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "B6"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "B7"},
-        {"status": "complete", "bi_icon": "bi-check-square-fill", "bay_status": "Morgan Freeman", "title": "B8"},
+        {"status": "free", "bay_status": "Available", "title": "B5"},
+        {"status": "free", "bay_status": "Available", "title": "B6"},
+        {"status": "free", "bay_status": "Available", "title": "B7"},
+        {"status": "complete", "bay_status": "Morgan Freeman", "title": "B8"},
       ],
       [
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "B9"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "B10"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "B11"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "B12"},
+        {"status": "free", "bay_status": "Available", "title": "B9"},
+        {"status": "free", "bay_status": "Available", "title": "B10"},
+        {"status": "free", "bay_status": "Available", "title": "B11"},
+        {"status": "free", "bay_status": "Available", "title": "B12"},
       ],
       [
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "O1"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "O2"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "O3"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "O4"},
-        {"status": "free", "bi_icon": "bi-app", "bay_status": "Available", "title": "O5"},
+        {"status": "bench", "bay_status": "Available", "title": "O1"},
+        {"status": "free", "bay_status": "Available", "title": "O2"},
+        {"status": "free", "bay_status": "Available", "title": "O3"},
+        {"status": "free", "bay_status": "Available", "title": "O4"},
+        {"status": "free", "bay_status": "Available", "title": "O5"},
 
       ]
     ]
     document.getElementById("grid").innerHTML = gen_grid(entries);
+
+    const entries_modal = [
+    [
+        {"status": "free", "bay_status": "", "title": "A1"},
+        {"status": "free", "bay_status": "", "title": "A2"},
+        {"status": "free", "bay_status": "", "title": "A3"},
+        {"status": "free", "bay_status": "", "title": "A4"},
+      ],
+      [
+        {"status": "free", "bay_status": "", "title": "A5"},
+        {"status": "complete", "bay_status": "Use this bay", "title": "A6"},
+        {"status": "free", "bay_status": "", "title": "A7"},
+        {"status": "free", "bay_status": "", "title": "A8"},
+      ],
+      [
+        {"status": "free", "bay_status": "", "title": "A9"},
+        {"status": "free", "bay_status": "", "title": "A10"},
+        {"status": "free", "bay_status": "", "title": "A11"},
+        {"status": "free", "bay_status": "", "title": "A12"},
+      ],
+    ]
+
+    document.getElementById("test-modal-container").innerHTML = gen_grid(entries_modal);
+
+    const modal = new bootstrap.Modal("#test-modal")
+    modal.show();
+
   </script>
 </body>
 </html>
