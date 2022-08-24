@@ -276,7 +276,6 @@ const main = async () => {
     // Server has acknolodged an action, close the modal.
     console.log("Got server ack for action, ack data:");
     console.dir(data)
-    await action_modal.hide();
 
     // Show alerts if the server sent any.
     if (data['alert'] != undefined) {
@@ -284,6 +283,11 @@ const main = async () => {
     } 
 
     // Don't continue if the location info modal isn't required.
+    setTimeout(async () => {
+      // Very temporary fix for a race condition
+      await action_modal.hide();
+    })
+
     if (!data['location_info_required']) return;
 
     if (data['location_changed']) {
