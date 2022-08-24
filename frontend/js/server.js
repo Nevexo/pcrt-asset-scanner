@@ -398,6 +398,12 @@ const main = async () => {
   socket.on('info', async (info) => {
     await toast.show("Server Info", info.message, info.type);
   })
+
+  // Send refresh message to server every 5 minutes
+  // TODO: potentially move this to server logic, to stop multiple clients from requesting a refresh at once.
+  setInterval(async () => {
+    await socket.emit("request_refresh")
+  }, 5 * 1000)
 }
 
 main();
