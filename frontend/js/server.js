@@ -403,7 +403,7 @@ const main = async () => {
   // TODO: potentially move this to server logic, to stop multiple clients from requesting a refresh at once.
   setInterval(async () => {
     await socket.emit("request_refresh")
-  }, 5 * 1000)
+  }, 5 * 60 * 1000)
 }
 
 main();
