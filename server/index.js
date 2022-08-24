@@ -325,6 +325,9 @@ const main = async () => {
       if (work_order.location == undefined || !valid_location) {
         // No location is set or it is invalid given this change (i.e., wip -> complete)
         // A new location will be assigned.
+        
+        client.broadcast_message("info", {"type": "Warning", "message": `Considering new locations for asset ${woid}`})
+
         const all_locations = await database.get_storage_locations();
         const asset_locations = await database.get_open_work_orders();
 
@@ -362,6 +365,8 @@ const main = async () => {
         }
 
         location = potential_locations[0];
+        client.broadcast_message("info", {"type": "Storage", "message": `New location chosen for asset ${woid} - ${location.name}`})
+
         // Update the location in the database
         const result = await database.set_work_order_location(woid, location['id']);
         if (!result) {
