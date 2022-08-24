@@ -8,6 +8,8 @@ const db = require("./database.js");
 const scan = require("./scanner.js")
 const clients = require("./client.js")
 
+const child_process = require("child_process")
+
 // Create a default logger with Winston
 // TODO: modify this to create local logging files and/or store in JSON format.
 const logger = winston.createLogger({
@@ -75,7 +77,9 @@ const main = async () => {
       case "SHUTDOWN":
         logger.info("QRCommand: Shutting down")
         database.disconnect();
-        process.exit(0)
+        await client.broadcast_message("info", {"message": "Shutting down, please wait."})
+        child_process.exec("shutdowm.exe /s /t 3")
+        break;
       case "CACHE_CLEAR":
         logger.info("QRCommand: Clearing location/state caches")
         client.broadcast_message("info", {"message": "Clearing location/state caches", "type": "info"})
