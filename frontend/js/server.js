@@ -140,6 +140,8 @@ class ScanModal {
 
     if (scan_data.work_order.location != undefined) {
       this.items.location.innerHTML = `Asset Location: <b>${scan_data.work_order.location.name}</b>`;
+    } else {
+      this.items.location.innerHTML = `Asset Location: <b>Not yet checked-in</b>`;
     }
 
     this.buttons.innerHTML = buttons;
