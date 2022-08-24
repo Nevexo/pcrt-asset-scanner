@@ -343,11 +343,12 @@ const main = async () => {
         for (let col in row) {
           col = row[col];
           let entry_col = {
-            "title": `${col['name']} (${col['work_order']['id']})`
+            "title": col['name']
           }
 
           if (col.hasOwnProperty('work_order')) {
-            // Bay is in use
+            entry_col['title'] = `${col['name']} (${col['work_order']['id']})`
+            // Bay is in use 
             switch(col['work_order']['status']['id']) {
               case 1: 
                 // In storage
