@@ -343,7 +343,7 @@ const main = async () => {
         for (let col in row) {
           col = row[col];
           let entry_col = {
-            "title": `${col['name']} (${col['id']})`
+            "title": `${col['name']} (${col['work_order']['id']})`
           }
 
           if (col.hasOwnProperty('work_order')) {
