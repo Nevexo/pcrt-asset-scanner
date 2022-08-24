@@ -412,6 +412,7 @@ const main = async () => {
     }
 
     await client.broadcast_message("ack_action", ack_operand);
+    logger.info(`Performed action ${action_id} on work order ${woid} successfully!`)
   })
 
   // If execution reaches this far, we can safely assume the server is up and running.
