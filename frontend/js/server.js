@@ -286,7 +286,7 @@ const main = async () => {
     setTimeout(async () => {
       // Very temporary fix for a race condition
       await action_modal.hide();
-    })
+    }, 300)
 
     if (!data['location_info_required']) return;
 
