@@ -121,7 +121,8 @@ class ScanModal {
     this.items = {
       "owner": document.getElementById("scan-modal-owner"),
       "status": document.getElementById("scan-modal-current-status"),
-      "problem": document.getElementById("scan-modal-problem")
+      "problem": document.getElementById("scan-modal-problem"),
+      "location": document.getElementById("scan-modal-location")
     }
     this.buttons = document.getElementById("scan-modal-actions");
     this.modal = new bootstrap.Modal("#scan-modal");
@@ -136,6 +137,11 @@ class ScanModal {
     this.items.owner.innerHTML = `Owner: <i class="bi bi-person-fill"></i> ${work_order.customer.name} (${work_order.customer.company})`;
     this.items.status.innerHTML = `Status: <i class="${state_icons[work_order.status.pcrt_scan_state.name]}"></i> ${work_order.status.name}`;
     this.items.problem.innerHTML = `${work_order.problem}`;
+
+    if (scan_data.work_order.location != undefined) {
+      this.items.location.innerHTML = `Asset Location: <b>${scan_data.work_order.location.name}</b>`;
+    }
+
     this.buttons.innerHTML = buttons;
 
     this.modal.show({'backdrop': 'static', 'keyboard': false});
