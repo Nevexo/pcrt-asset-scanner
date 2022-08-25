@@ -210,7 +210,8 @@ class Database {
     // Set a work order to a new PCRT state. 
     this.logger.debug(`setting ${woid} to state: ${state_id}`)
 
-    await this.connection.query(`UPDATE pc_wo SET pcstatus = ${mysql.escape(state_id)} WHERE woid = ${mysql.escape(woid)}`).catch(error => {
+    // TODO: This sets the pickupdate on all changes to the pcstatus, refactor to be aware of the wo status.
+    await this.connection.query(`UPDATE pc_wo SET pcstatus = ${mysql.escape(state_id)}, pickupdate = ${Date.now()} WHERE woid = ${mysql.escape(woid)}`).catch(error => {
       this.logger.error(error);
       return false;
     });
