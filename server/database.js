@@ -141,7 +141,20 @@ class Database {
   async get_work_order_by_location(slid) {
     // Get work order from storage location
     this.logger.debug(`getting work order in location ${slid}`)
-    const result = await this.connection.query(`SELECT * FROM pc_wo WHERE slid = ${mysql.escape(slid)}`);
+
+    // Find status ID for all closed jobs
+    let closed_state = undefined;
+    for (const state in this.config.states) {
+      if (this.config.states[state].name == "collected") closed_state = state;
+    }
+
+    if (!closed_state) {
+      this.logger.error("FATAL: No closed state found, ensure it is created in PCRT!")
+      this.logger.error("This error is fatal, exiting.")
+      process.exit(1)
+    }
+
+    const result = await this.connection.query(`SELECT * FROM pc_wo WHERE slid = ${mysql.escape(slid)}, pcstatus = ${mysql.escape(closed_state)}`);
 
     if (result.length == 0) return undefined;
 
