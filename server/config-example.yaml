@@ -55,11 +55,10 @@ states:
     is_stored: true
     work_in_progress: true
 
-stoage_locations:
+storage_prefixes:
   # The wip_prefix and complete_prefix set a prefix for the slname, i.e., if a job is WIP it will go into a storage
   # bay prefixed with wip_prefix.
-  wip_prefix: A
-  complete_prefix: B
-
-  # Any small devices will be assigned a storage bay automatically, larger devices may not have a specified location.
-  small_devices: [laptop]
+  # An oversized device is any device not classified as a laptop, such as a desktop or AIO.
+  wip: A
+  complete: B
+  oversize: O
