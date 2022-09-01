@@ -219,12 +219,17 @@ class Database {
     return work_orders
   }
 
-  async set_work_order_state(woid, state_id) {
+  async set_work_order_state(woid, state_id, state) {
     // Set a work order to a new PCRT state. 
-    this.logger.debug(`setting ${woid} to state: ${state_id}`)
+    this.logger.debug(`setting ${woid} to state: ${state_id} (${state['name']})`)
 
-    // TODO: This sets the pickupdate on all changes to the pcstatus, refactor to be aware of the wo status.
-    await this.connection.query(`UPDATE pc_wo SET pcstatus = ${mysql.escape(state_id)}, pickupdate = ${Date.now()} WHERE woid = ${mysql.escape(woid)}`).catch(error => {
+    // TODO: temporary hack
+    let dateQuery = "";
+    if (!state.is_on_site) {
+      dateQuery = `, pickupdate = '${new Date().toISOString().slice(0, 19).replace('T', ' ')}'`;
+    }
+
+    await this.connection.query(`UPDATE pc_wo SET pcstatus = ${mysql.escape(state_id)} ${dateQuery} WHERE woid = ${mysql.escape(woid)}`).catch(error => {
       this.logger.error(error);
       return false;
     });

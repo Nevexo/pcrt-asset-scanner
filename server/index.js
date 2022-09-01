@@ -290,6 +290,7 @@ const main = async () => {
     let state_stored = undefined;
     let state_wip = undefined;
     let state_extra_alert = undefined;
+    let new_state = undefined;
     for (const state_id in config['states']) {
       const state = config['states'][state_id]
       if (state['name'] == action_id) {
@@ -297,6 +298,7 @@ const main = async () => {
         state_stored = state['is_stored'];
         state_wip = state['work_in_progress'];
         state_extra_alert = state['extra_alert'];
+        new_state = state;
       }
     }
 
@@ -386,7 +388,7 @@ const main = async () => {
     
 
     // PCRT state has been resolved to a work order, the change can be applied to the database.
-    const result = await database.set_work_order_state(woid, pcrt_state);
+    const result = await database.set_work_order_state(woid, pcrt_state, new_state);
 
     if (!result) {
       logger.error("Failed to update state.");
