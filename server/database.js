@@ -154,7 +154,7 @@ class Database {
       process.exit(1)
     }
 
-    const result = await this.connection.query(`SELECT * FROM pc_wo WHERE slid = ${mysql.escape(slid)} AND pcstatus = ${mysql.escape(closed_state)}`);
+    const result = await this.connection.query(`SELECT * FROM pc_wo WHERE slid = ${mysql.escape(slid)} AND pcstatus != ${mysql.escape(closed_state)}`);
 
     if (result.length == 0) return undefined;
 
