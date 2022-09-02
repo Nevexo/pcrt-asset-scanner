@@ -5,8 +5,8 @@ $pwd = Get-Location
 $PORT = "COM3"
 
 $env:PORT_OVERRIDE=$PORT
-Start-Process -WindowStyle Maximized powershell -ArgumentList '-noexit -command "Set-Location $pwd; Set-Location server; pm2 start index.js"'
-Start-Process -WindowStyle Maximized powershell -ArgumentList '-noexit -command "Set-Location $pwd; Set-Location com-scanner-agent; pm2 start index.js"'
+Start-Process -WindowStyle Maximized powershell -ArgumentList '-noexit -command "Set-Location $pwd; Set-Location server; node index.js"'
+Start-Process -WindowStyle Maximized powershell -ArgumentList '-noexit -command "Set-Location $pwd; Set-Location com-scanner-agent; node index.js"'
 Start-Process -WindowStyle Maximized powershell -ArgumentList '-noexit -command "Set-Location $pwd; Set-Location frontend; py -m http.server 80"'
 
 Write-Host "Launch browser"
