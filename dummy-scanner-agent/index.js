@@ -16,9 +16,16 @@ const main = async () => {
   const socket = await io("http://localhost:3000");
   socket.on('connect', async () => {
     console.log('connected');
-    await socket.emit('barcode', args[0].toString());
-    console.log("sent, dropping off.")
-    socket.close();
+    console.log('waiting to send barcode...');
+    setTimeout(async () => {
+        console.log('send barcode')
+        await socket.emit('barcode', args[0].toString());
+    }, 1000);
+    setTimeout(async () => {
+        console.log('send fault')
+        await socket.emit('fault');
+    }, 2000);
+    console.log("strike ^c to end")
   })
 
   socket.on('event', (data) => {

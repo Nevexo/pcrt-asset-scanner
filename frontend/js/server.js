@@ -257,10 +257,18 @@ const main = async () => {
       error_modal.show("bi bi-upc-scan", "Scanner Disconnected", "Please check the services and USB cables to ensure the scanner is connected.")
       status_text.innerText = "Not Ready";
       status_text.className = "text-danger";
-    } else {
+    } else if (status.status == "connected") {
       error_modal.hide();
-      status_text.innerText = "Ready to Scan";
+      if (status.type) {
+        status_text.innerText = `Ready to Scan - ${status.type} (v ${status.version})`;
+      } else {
+        status_text.innerText = "Ready to Scan";
+      }
       status_text.className = "text-success";
+    } else if (status.status == "faulted") {
+        status_text.innerText = "Not Ready - FAULTED!";
+        status_text.className = "text-warning";
+        error_modal.show("bi bi-upc-scan", "Scanner Faulted!", status.message)
     }
   })
 

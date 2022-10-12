@@ -99,9 +99,23 @@ const main = async () => {
 
   // Handle scanner disconnecting
   scanner.emitter.on("scanner_disconnected", async () => {
-    client.broadcast_message("scanner_status", {"status": "disconnected"})
+    await client.broadcast_message("scanner_status", {"status": "disconnected"})
   });
 
+  // Handle a fault from the scanner agent
+  scanner.emitter.on("scanner_faulted", async () => {
+      await client.broadcast_message("scanner_status", {
+        "status": "faulted",
+        "message": "Scanner agent reported a fault, this is usually temporary. Check the logs if this persists."
+      });
+  })
+
+  // Handle scanner fault clearing
+  scanner.emitter.on("scanner_fault_clear", async () => {
+      await client.broadcast_message("scanner_status", {
+          "status": "connected"
+      })
+  })
   // Handle any other barcode entering the system from a scanner agent.
   scanner.emitter.on('barcode', async (code) => {
     const wo = await database.get_work_order(code).catch(error => {
