@@ -42,13 +42,32 @@ class Scanner {
       this.logger.debug("scanner event: " + data);
     })
 
-    client.on('barcode', (data) => {
+    client.on('manifest', (data) => {
+      this.logger.debug("Scanner manifest recieved");
+      this.logger.debug(JSON.stringify(data));
+      this.logger.info(`Scanner type ${data.type} connected, version ${data.version}`)
+      this.emitter.emit("scanner_info", data);
+    })
+
+    client.on('barcode', async (data) => {
       this.logger.debug("scanner barcode: " + data);
       if (data.startsWith("PCRT_SCAN_")) {
         this.logger.info("recieved system command: " + data);
         return this.emitter.emit("system_command", data.replace("PCRT_SCAN_", "").trim());
       }
       this.emitter.emit("barcode", data);
+
+      await client.emit("ack", data);
+    })
+
+    client.on('fault', async () => {
+      this.logger.warn(`Fault reported by Scanner, alerting clients.`);
+      await this.emitter.emit("scanner_faulted");
+    })
+
+    client.on('fault_clear', async () => {
+      this.logger.info("Scanner has cleared the fault.");
+      await this.emitter.emit("scanneR_fault_clear");
     })
 
     client.on('disconnect', () => {

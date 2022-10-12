@@ -94,8 +94,16 @@ const main = async () => {
   
   // Handle new scanner connecting
   scanner.emitter.on("scanner_connected", async () => {
-    client.broadcast_message("scanner_status", {"status": "connected"})
+    await client.broadcast_message("scanner_status", {"status": "connected"})
   });
+
+  scanner.emitter.on("scanner_info", async (data) => {
+   await client.broadcast_message("scanner_status", {
+     "status": "connected",
+     "type": data['type'],
+     "version": data['version']
+   })
+  })
 
   // Handle scanner disconnecting
   scanner.emitter.on("scanner_disconnected", async () => {
@@ -116,6 +124,7 @@ const main = async () => {
           "status": "connected"
       })
   })
+
   // Handle any other barcode entering the system from a scanner agent.
   scanner.emitter.on('barcode', async (code) => {
     const wo = await database.get_work_order(code).catch(error => {
