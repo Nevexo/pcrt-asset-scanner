@@ -105,7 +105,7 @@ const main = async () => {
     // Open the connection!
     logger.info(`Bringing up scanner connection on port ${scanner_port}...`);
     const port = new SerialPort({
-        path: port,
+        path: scanner_port,
         baudRate: process.env.COM_BAUD || 9600,
         dataBits: process.env.COM_DATA_BITS || 8,
         parity: process.env.COM_PARITY || 'none',
