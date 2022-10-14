@@ -131,7 +131,7 @@ const main = async () => {
         logger.warn("FAULT: error caught, will reconnect port.");
         session_faulted = true;
         await socket.emit("fault")
-        setTimeiout (async () => {
+        setTimeout (async () => {
             await port.open();
         }, 1000);
     })
