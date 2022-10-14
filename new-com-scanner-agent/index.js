@@ -131,8 +131,9 @@ const main = async () => {
         logger.warn("FAULT: error caught, will reconnect port.");
         session_faulted = true;
         await socket.emit("fault")
-        await port.close();
-        await port.open();
+        setTimeiout (async () => {
+            await port.open();
+        }, 1000);
     })
 
     // The port closed down, attempt to re-open.
