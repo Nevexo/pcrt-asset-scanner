@@ -208,8 +208,8 @@ const main = async () => {
         // Skip any states that are not "work in progress"
         if (!state.pcrt_scan_state.work_in_progress) continue;
 
-        // Skip any states that are "stored"
-        if (state.pcrt_scan_state.is_stored) continue;
+        // Skip any states that are "stored" unless no storage location is set.
+        if (state.pcrt_scan_state.is_stored && wo.location != undefined) continue;
         
         permissible_states.push(state);
       }
