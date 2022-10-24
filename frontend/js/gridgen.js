@@ -23,6 +23,13 @@ const gen_grid = (entries) => {
       let title_text_style = "";
       let bi_icon = "bi-app"
       
+      if (col['status'] == "error") {
+        style = "card-body bg-danger";
+        sub_text_style = "text-light";
+        title_text_style = "text-white";
+        bi_icon = "bi-exclamation-circle-fill";
+      }
+
       if (col['status'] == "wip") {
         style = "card-body bg-primary";
         sub_text_style = "text-light";
@@ -59,7 +66,12 @@ const gen_grid = (entries) => {
       }
 
       html += `<div class='card'><div class='${style}'>`;
-      html += `<div class='card-title ${title_text_style}'><i class='bi ${bi_icon}'></i> ${col['title']}</div>`;
+      html += `<div class='card-title ${title_text_style}'>`
+      if (col['high_priority']) {
+          html += `<div class="spinner-grow spinner-grow-sm" role="status"></div>  `
+      }
+      html += `<i class='bi ${bi_icon}'></i> ${col['title']}`;
+      html += `</div>`;
       html += `<div class='card-subtitle mb-2 ${sub_text_style}'>${col['bay_status']}</div>`;
       html += '</div></div></div>' // TODO: Do that better...
     }

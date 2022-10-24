@@ -192,6 +192,26 @@ const gen_action_buttons = (woid, actions) => {
   return html;
 }
 
+const hide_clashes = async () => {
+  document.getElementById("clash-alert").style.display = "none";
+}
+
+const show_clashes = async (location_name, work_orders) => {
+  // Display a clash alert if one is caught.
+  const alert_box = document.getElementById("clash-alert");
+  const alert_text = document.getElementById("clash-alert-text");
+
+  let text = ` Work order clash in ${location_name} - between: `;
+
+  for (let wo in work_orders) {
+    wo = work_orders[wo];
+    text += `${wo.customer.name} (${wo.id}) `
+  }
+
+  alert_text.innerText = text + " RESOLVE ASAP!";
+  alert_box.style.display = "block";
+}
+
 const action_modal = new LoadingModal();
 
 const perform_action = async (action_id, woid) => {
@@ -311,6 +331,7 @@ const main = async () => {
     const dom_container = document.getElementById("grid");
     const dom_container_pending = document.getElementById("grid-data-pending");
     dom_container_pending.style.display = "block";
+    await hide_clashes();
 
     // Split storage bays into sections (by the storage_type)
     // For example, the A prefixed bays in our installation are 'work-in-progress' this is show the bays can be split correctly.
@@ -385,6 +406,19 @@ const main = async () => {
             }
 
             entry_col['bay_status'] = col['work_order']['customer']['name'];
+
+          } else if (col.hasOwnProperty('error')) {
+            if (col['error'] === "clash") {
+              entry_col['title'] = col['name'];
+              entry_col['status'] = "error";
+              entry_col['bay_status'] = "Clashed Work Order!";
+              entry_col['high_priority'] = true;
+              await show_clashes(col['name'], col['clashing_work_orders'])
+            } else {
+              entry_col['title'] = col['name'];
+              entry_col['status'] = "error"
+              entry_col['bay_status'] = `Unavailable: ${col['error']}`
+            }
 
           } else {
             entry_col['status'] = "available";
