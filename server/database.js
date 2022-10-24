@@ -259,24 +259,35 @@ class Database {
       // Check if a work order is in this location
       location = locations[location];
 
-      let work_order = undefined;
+      let work_orders = [];
       for (const wo in open_work_orders) {
         if (open_work_orders[wo].location == undefined) continue; // Skip if no location set
 
         // Check if the work order is in this location
         if (open_work_orders[wo].location.id == location.id) {
-          work_order = open_work_orders[wo];
-          break;
+          work_orders.push(open_work_orders[wo]);
         }
       }
 
       // Add the location to the storage status
-      storage_status.push({
-        "id": location.id,
-        "name": location.name,
-        "location_type": location.type,
-        "work_order": work_order
-      })
+      if (work_orders.length > 1) {
+        storage_status.push({
+          "id": location.id,
+          "name": location.name,
+          "location_type": location.type,
+          "clashing_work_orders": work_orders,
+          "error": "clash"
+        })
+
+        this.logger.warn(`clash detected at location ${location.id} (loc name: ${location.name})! Found ${work_orders.length} w/os`)
+      } else {
+        storage_status.push({
+            "id": location.id,
+            "name": location.name,
+            "location_type": location.type,
+            "work_order": work_orders[0]
+        })
+      }
     }
   
     return storage_status;
