@@ -7,6 +7,7 @@ const YAML = require('yaml')
 const db = require("./database.js");
 const scan = require("./scanner.js")
 const clients = require("./client.js")
+const lockouts = require("./lockouts.js")
 
 const child_process = require("child_process")
 
@@ -42,9 +43,13 @@ const main = async () => {
   }
   logger.debug("configuration loaded")
 
+  // Bring up lockouts handler
+  logger.debug("starting lockouts handler")
+  const lockout = new lockouts.Lockouts(logger, config);
+
   // Bring up database
   logger.debug("database load")
-  const database = new db.Database(logger, config);
+  const database = new db.Database(logger, config, lockout);
 
   database.emitter.on("disconnected", () => {
     logger.error("Database disconnected")
@@ -272,7 +277,7 @@ const main = async () => {
   // TODO: This really needs tidying up into its own module.
   client.emitter.on('client_connected', async (client) => {
     await client.emit("hello", {
-      "api_version": 1, 
+      "api_version": 2, 
       "api_name": "pcrt_scanner",
       "connect_time": new Date().toISOString(),
       "scanner_ready": scanner.scanner_connected
@@ -285,6 +290,31 @@ const main = async () => {
   client.emitter.on("refresh_storage", async (client_instance) => {
     // Client requested a refresh of the storage view.
     await client_instance.emit("storage_state", await database.get_storage_statues())
+  })
+
+  // Handle request for lockout info
+  client.emitter.on("get_lockout_info", async (data) => {
+    // The client has requested lockout information for a given slid
+    logger.debug(`Client requested lockout info for ${data.data.slid}`);
+    const calling_client = data.client;
+    const slid = data.data.slid;
+
+    const bay_lockout = await lockout.get_lockout_for_bay(slid);
+    logger.debug(`Lockout info for ${slid} is ${JSON.stringify(bay_lockout)}`);
+
+    if (!bay_lockout) {
+      // There is no lockout for this bay, give the client the option to create one.
+      await calling_client.emit("lockout_info", {
+        "slid": slid,
+        "engineers": config.lockouts.engineers
+      })
+    } else {
+      // There is a lockout in this bay
+      await calling_client.emit("lockout_info", {
+        "slid": slid,
+        "lockout": bay_lockout
+      })
+    }
   })
 
   client.emitter.on("apply_action", async (data) => {

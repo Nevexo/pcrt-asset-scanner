@@ -62,3 +62,10 @@ storage_prefixes:
   wip: A
   complete: B
   oversize: O
+
+lockouts:
+  database_file: lockouts.db
+  engineers:
+    - Steven
+    - Geoff
+    - Gregg

@@ -4,8 +4,9 @@ const events = require("events")
 const mysql = require("promise-mysql");
 
 class Database {
-  constructor(logger, config) {
+  constructor(logger, config, lockouts) {
     this.logger = logger.child({meta: {"service": "database"}});
+    this.lockouts = lockouts;
     this.logger.debug("database invoked, loading");
     this.config = config;
 
@@ -127,14 +128,15 @@ class Database {
     const states = await this.get_asset_states();
     const locations = await this.get_storage_locations()
 
-    let work_order = {
+    let work_order = {"type": "work_order", "payload":
+    {
       "id": wo.woid,
       "customer": await this.get_customer(wo.pcid),
       "problem": wo.probdesc,
       "status": states[wo.pcstatus.toString()] || wo.pcstatus || undefined,
       "open_date": new Date(wo.dropdate).toISOString(),
       "location": locations[wo.slid] || undefined,
-    }
+    }}
     return work_order
   }
 
@@ -156,7 +158,22 @@ class Database {
 
     const result = await this.connection.query(`SELECT * FROM pc_wo WHERE slid = ${mysql.escape(slid)} AND pcstatus != ${mysql.escape(closed_state)}`);
 
-    if (result.length == 0) return undefined;
+    if (result.length == 0) {
+      // Check for a bay lockout
+      const lockout = await this.lockouts.get_lockout_for_bay(slid);
+
+      // There is an active lockout, send this instead of a work order.
+      if (lockout) {
+        return {
+          "type": "lockout",
+          "payload": {
+            "id": lockout.id,
+            "engineer": lockout.engineer,
+            "timestamp": lockout.timestamp,
+          }
+        }
+      }
+    } else {return undefined;}
 
     return this.format_work_order(result[0]);
   }
@@ -253,19 +270,35 @@ class Database {
     // Get the storage status for each bay.
     const open_work_orders = await this.get_open_work_orders();
     const locations = await this.get_storage_locations();
+    const lockouts = await this.lockouts.get_lockouts();
     let storage_status = [];
   
+    this.logger.debug(`targeting ${open_work_orders.length} open work orders`)
+    this.logger.debug(`targeting ${lockouts.length} lockouts`)
+
     for (let location in locations) {
       // Check if a work order is in this location
       location = locations[location];
 
       let work_orders = [];
       for (const wo in open_work_orders) {
-        if (open_work_orders[wo].location == undefined) continue; // Skip if no location set
+        if (open_work_orders[wo]['payload'].location == undefined) continue; // Skip if no location set
 
         // Check if the work order is in this location
-        if (open_work_orders[wo].location.id == location.id) {
+        if (open_work_orders[wo]['payload'].location.id == location.id) {
           work_orders.push(open_work_orders[wo]);
+        }
+      }
+
+      this.logger.debug(`found ${work_orders.length} work orders in location ${location.name}`)
+
+      // Check for a lockout
+      for (const lockout in lockouts) {
+        if (lockouts[lockout].bay == location.id) {
+          work_orders.push({
+            "type": "lockout",
+            "payload": lockouts[lockout]
+          })
         }
       }
 
@@ -289,7 +322,8 @@ class Database {
         })
       }
     }
-  
+
+    this.logger.debug(`resolved ${storage_status.length} storage locations`);
     return storage_status;
   };
 

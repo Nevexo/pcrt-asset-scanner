@@ -59,6 +59,15 @@ class Client {
         "data": data
       })
     })
+
+    client.on("get_lockout_info", async (data) => {
+      this.logger.debug("Processing lockout info request...");
+      // Forward to main handler.
+      this.emitter.emit("get_lockout_info", {
+        "client": client,
+        "data": data
+      })
+    })
   }
 
   async broadcast_message(topic, message) {
