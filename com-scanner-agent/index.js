@@ -131,8 +131,9 @@ const main = async () => {
         logger.warn("FAULT: error caught, will reconnect port.");
         session_faulted = true;
         await socket.emit("fault")
-        await port.close();
-        await port.open();
+        setTimeout (async () => {
+            await port.open();
+        }, 1000);
     })
 
     // The port closed down, attempt to re-open.
@@ -146,7 +147,8 @@ const main = async () => {
     // The port has recieved data, send it to the server.
     port.on('data', async (data) => {
         const string = data.toString().trim();
-        if (string.length > process.env.DATA_LENGTH_LIMIT || 5) {
+        logger.debug(`incoming string: ${string} (length: ${string.length}) (limiter: ${process.env.DATA_LENGTH_LIMIT || 6})`);
+        if (string.length > (process.env.DATA_LENGTH_LIMIT || 6)) {
             logger.warn("Invalid item scanned, will not forward to server.");
             return;
         }
