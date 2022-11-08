@@ -34,7 +34,11 @@ class Client {
   async handle_connection(client) {
     this.logger.info("New frontend client has connected.")
     this.emitter.emit("client_connected", client);
-    
+
+    client.onAny((message, data) => {
+      this.logger.debug("[incoming] cmd: " + message + " data: " + JSON.stringify(data));
+    })
+
     client.on('disconnect', () => {
       this.logger.info("Frontend client has disconnected")
       this.emitter.emit("client_disconnected");
@@ -64,6 +68,24 @@ class Client {
       this.logger.debug("Processing lockout info request...");
       // Forward to main handler.
       this.emitter.emit("get_lockout_info", {
+        "client": client,
+        "data": data
+      })
+    })
+
+    client.on("lockout_create", async (data) => {
+      this.logger.debug("Processing lockout create request...");
+      // Forward to main handler.
+      this.emitter.emit("lockout_create", {
+        "client": client,
+        "data": data
+      })
+    })
+
+    client.on("clear_lockout", async (data) => {
+      this.logger.debug("Processing lockout clear request...");
+      // Forward to main handler.
+      this.emitter.emit("clear_lockout", {
         "client": client,
         "data": data
       })

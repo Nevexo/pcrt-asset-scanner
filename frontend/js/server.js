@@ -124,7 +124,23 @@ class LockoutCreateModal {
   }
   
   async show(lockout, bay) {
-    this.text.innerHTML = `No lockouts are assigned to this bay, select your name to create a new one.`;
+    this.text.innerHTML = `No lockouts have been assigned to ${bay}. Only create a lockout as a temporary measure, for example, if you are unsure why an asset is in a specific bay. Select your name below to create a lockout.`;
+
+    // Create engineer buttons
+    this.buttons.innerHTML = "";
+    console.dir(lockout)
+    for (let engineer of lockout.engineers) {
+      let btn = document.createElement("button");
+      btn.className = "btn btn-block btn-primary";
+      btn.innerText = engineer;
+      btn.addEventListener("click", () => {
+        this.hide();
+        socket.emit("lockout_create", {slid: bay, engineer: engineer});
+      });
+
+      this.buttons.appendChild(btn);
+
+    }
     await this.modal.show();
     this.visible = true;
   }
@@ -235,6 +251,13 @@ const prepare_lockout = async (slid) => {
   // Send a lockout_info request to the server#
   await toast.show("Requesting lockout Information", `Fetching data on ${slid}`, slid);
   socket.emit("get_lockout_info", {"slid": slid});
+}
+
+const lockout_release = async (lockout_id) => {
+  // Trigger a server lockout release
+  await toast.show("Releasing Lockout", `Releasing lockout ${lockout_id}`, lockout_id);
+  view_lockout_modal.hide();
+  socket.emit("clear_lockout", {"id": lockout_id});
 }
 
 const hide_clashes = async () => {
@@ -361,7 +384,7 @@ const main = async () => {
       view_lockout_modal.show(data.lockout);
     } else {
       // No lockout in place, show create lockout modal.
-      create_lockout_modal.show();
+      create_lockout_modal.show(data, data.slid);
     }
   })
 

@@ -172,8 +172,8 @@ class Database {
             "timestamp": lockout.timestamp,
           }
         }
-      }
-    } else {return undefined;}
+      } else {return undefined;}
+    } 
 
     if (result.length > 1) {
       // There are too many assets in this bay.
