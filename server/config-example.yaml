@@ -64,6 +64,11 @@ storage_prefixes:
   oversize: O
 
 lockouts:
+  # PCRT-Scan lockouts allow bays to be temporarily locked-out from use, for example, if an asset is placed in a bay that has
+  # not been assigned a work order. Remove this section to disable lockouts.
+  # Lockouts uses an sqlite database stored on the server, rather than storing lockout details on the PCRT database
+  # this is to avoid modifying the typical PCRT schema. 
+  # Engineers must be defined in the lockouts section, these are people able to create lockouts.
   database_file: lockouts.db
   engineers:
     - Steven
