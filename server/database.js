@@ -352,6 +352,18 @@ class Database {
     return customer;
   }
 
+  async add_private_note(woid, note) {
+    // Add a private note to the work order
+    this.logger.debug(`adding private note to ${woid} - ${note}`)
+    const date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+    await this.connection.query(`INSERT INTO wonotes (notetype, thenote, noteuser, notetime, woid) VALUES (1, ${mysql.escape(note)}, 'Scanner', ${mysql.escape(date)}, ${mysql.escape(woid)})`).catch(error => {
+      this.logger.error(error);
+      return false;
+    })
+
+    return true;
+  }
 }
 
 exports.Database = Database;
