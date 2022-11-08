@@ -72,7 +72,13 @@ const gen_grid = (entries) => {
         bi_icon = "bi-basket-fill"
       }
 
-      html += `<a style='text-decoration: none; color: black;' onclick='prepare_lockout("${col['slid']}")'><div class='card'><div class='${style}'>`;
+      // Check if the bay is available or in lockout, if not, don't allow the user to click it.
+      if (col['status'] == "available" || col['status'] == "lockout") {
+        html += `<a style='text-decoration: none; color: black;' onclick='prepare_lockout("${col['slid']}")'><div class='card'><div class='${style}'>`;
+      } else {
+        html += `<a style='text-decoration: none; color: black;'><div class='card'><div class='${style}'>`;
+      }
+
       html += `<div class='card-title ${title_text_style}'>`
       if (col['high_priority']) {
           html += `<div class="spinner-grow spinner-grow-sm" role="status"></div>  `
