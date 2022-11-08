@@ -298,6 +298,8 @@ const main = async () => {
   // Handle request for lockout info
   client.emitter.on("get_lockout_info", async (data) => {
     // The client has requested lockout information for a given slid
+    if (!lockout.db) return;
+
     logger.debug(`Client requested lockout info for ${data.data.slid}`);
     const calling_client = data.client;
     const slid = data.data.slid;
@@ -322,6 +324,8 @@ const main = async () => {
 
   client.emitter.on("lockout_create", async (data) => {
     // The client has requested a new lockout
+    if (!lockout.db) return;
+
     logger.debug(`Client requested lockout creation for ${data.data.slid} for engineer: ${data.data.engineer}`);
 
     // Check for an existing work order
@@ -343,6 +347,8 @@ const main = async () => {
   client.emitter.on("clear_lockout", async (data) => {
     // The client has requested a lockout release.
     // This accepts a lockout ID, not a bay ID.
+    if (!lockout.db) return;
+
     logger.debug(`Client requested lockout release for ${data.data.lockout_id}`);
     const id = data.data.id;
 

@@ -17,6 +17,12 @@ class Lockouts {
     // Setup event emitters
     this.emitter = new events.EventEmitter();
 
+    // Check if lockouts are configured in config
+    if (!this.config.lockouts) {
+      this.logger.warn("The lockouts feature has not been configured, please update your configuration file. Parts of PCRT-Scan may not work as expected without lockouts.");
+      return;
+    }
+
     // Setup and lock the database.
     this.db = new sqlite3.Database(this.config.lockouts.database_file, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (error) => {
       if (error) {
@@ -37,6 +43,8 @@ class Lockouts {
 
   async get_lockouts() {
     // Get all active lockouts
+    if (!this.db) return [];
+
     return new Promise((resolve, reject) => {
       this.db.all("SELECT * FROM lockouts", (error, rows) => {
         if (error) {
@@ -52,6 +60,8 @@ class Lockouts {
   async get_lockout_for_bay(slid) {
     // Get lockout for a specific bay
     // Returns a lockout if one exists, otherwise returns false.
+    if (!this.db) return;
+
     this.logger.debug(`Getting lockout for bay ${slid}`)
     return new Promise((resolve, reject) => {
       this.db.get("SELECT * FROM lockouts WHERE bay = ?", slid, (error, row) => {
@@ -71,6 +81,8 @@ class Lockouts {
 
   async create_lockout(slid, engineer) {
     // Create a new lockout
+    if (!this.db) return;
+
     this.logger.debug(`Creating lockout for bay ${slid} by engineer ${engineer}!`)
     this.db.run("INSERT INTO lockouts (bay, engineer, timestamp) VALUES (?, ?, ?)", [slid, engineer, Date.now()], (error) => {
       if (error) {
@@ -85,6 +97,8 @@ class Lockouts {
 
   async clear_lockout(id) {
     // Clear a lockout
+    if (!this.db) return;
+    
     this.logger.debug(`Clearing lockout ${id}!`)
     this.db.run("DELETE FROM lockouts WHERE id = ?", id, (error) => {
       if (error) {
