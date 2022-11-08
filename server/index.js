@@ -480,12 +480,30 @@ const main = async () => {
           });
           return;
         }
+
+        // Add private notes for location change/assignment
+        if (work_order.location == undefined) {
+          // A location has never been set
+          if (config['notes']['location_assigned']) {
+            await database.add_private_note(woid, `Location assigned: ${location.name}`);
+          }
+        } else {
+          // This is a change of location
+          if (config['notes']['location_changed']) {
+            await database.add_private_note(woid, `Asset location changed from ${work_order.location.name} to ${location.name} by the server.`);
+          }
+        }
       }
     }
     
 
     // PCRT state has been resolved to a work order, the change can be applied to the database.
     const result = await database.set_work_order_state(woid, pcrt_state, new_state);
+
+    // Add private note to work order regarding state change
+    if (config['notes']['status_changed']) {
+      await database.add_private_note(woid, `Asset state changed to '${new_state['alias']}' by scanner.`);
+    }
 
     if (!result) {
       logger.error("Failed to update state.");
