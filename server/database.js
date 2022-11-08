@@ -175,6 +175,11 @@ class Database {
       }
     } else {return undefined;}
 
+    if (result.length > 1) {
+      // There are too many assets in this bay.
+      throw new Error("overallocated_bay");
+    }
+
     return this.format_work_order(result[0]);
   }
 
