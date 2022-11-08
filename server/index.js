@@ -7,8 +7,9 @@ const YAML = require('yaml')
 const db = require("./database.js");
 const scan = require("./scanner.js")
 const clients = require("./client.js")
+const lockouts = require("./lockouts.js")
 
-const child_process = require("child_process")
+const child_process = require("child_process");
 
 // Create a default logger with Winston
 // TODO: modify this to create local logging files and/or store in JSON format.
@@ -42,9 +43,13 @@ const main = async () => {
   }
   logger.debug("configuration loaded")
 
+  // Bring up lockouts handler
+  logger.debug("starting lockouts handler")
+  const lockout = new lockouts.Lockouts(logger, config);
+
   // Bring up database
   logger.debug("database load")
-  const database = new db.Database(logger, config);
+  const database = new db.Database(logger, config, lockout);
 
   database.emitter.on("disconnected", () => {
     logger.error("Database disconnected")
@@ -127,7 +132,7 @@ const main = async () => {
 
   // Handle any other barcode entering the system from a scanner agent.
   scanner.emitter.on('barcode', async (code) => {
-    const wo = await database.get_work_order(code).catch(error => {
+    let wo = await database.get_work_order(code).catch(error => {
       logger.error(error)
       logger.warn("Unknown barcode: " + code)
       client.broadcast_message("server_error", {
@@ -138,6 +143,9 @@ const main = async () => {
     });
 
     if (!wo) return;
+    if (wo.type != "work_order") return;
+
+    wo = wo.payload;
 
     // Successfully found the work order and customer, we can proceede.
     logger.debug("Scanned owner: " + wo.customer.name);
@@ -272,7 +280,7 @@ const main = async () => {
   // TODO: This really needs tidying up into its own module.
   client.emitter.on('client_connected', async (client) => {
     await client.emit("hello", {
-      "api_version": 1, 
+      "api_version": 2, 
       "api_name": "pcrt_scanner",
       "connect_time": new Date().toISOString(),
       "scanner_ready": scanner.scanner_connected
@@ -287,6 +295,61 @@ const main = async () => {
     await client_instance.emit("storage_state", await database.get_storage_statues())
   })
 
+  // Handle request for lockout info
+  client.emitter.on("get_lockout_info", async (data) => {
+    // The client has requested lockout information for a given slid
+    logger.debug(`Client requested lockout info for ${data.data.slid}`);
+    const calling_client = data.client;
+    const slid = data.data.slid;
+
+    const bay_lockout = await lockout.get_lockout_for_bay(slid);
+    logger.debug(`Lockout info for ${slid} is ${JSON.stringify(bay_lockout)}`);
+
+    if (!bay_lockout) {
+      // There is no lockout for this bay, give the client the option to create one.
+      await calling_client.emit("lockout_info", {
+        "slid": slid,
+        "engineers": config.lockouts.engineers
+      })
+    } else {
+      // There is a lockout in this bay
+      await calling_client.emit("lockout_info", {
+        "slid": slid,
+        "lockout": bay_lockout
+      })
+    }
+  })
+
+  client.emitter.on("lockout_create", async (data) => {
+    // The client has requested a new lockout
+    logger.debug(`Client requested lockout creation for ${data.data.slid} for engineer: ${data.data.engineer}`);
+
+    // Check for an existing work order
+    const existing_wo = await database.get_work_order_by_location(data.data.slid);
+    if (existing_wo) {
+      // There is a work order for this bay, we cannot create a lockout.
+      await data.client.emit("server_error", {
+        "error": "lockout_create_failed",
+        "message": `Cannot create lockout for ${data.data.slid} - there is a work order in this bay.`
+      })
+      
+      return;
+    }
+
+    await lockout.create_lockout(data.data.slid, data.data.engineer);
+    await data.client.emit("storage_state", await database.get_storage_statues())
+  });
+
+  client.emitter.on("clear_lockout", async (data) => {
+    // The client has requested a lockout release.
+    // This accepts a lockout ID, not a bay ID.
+    logger.debug(`Client requested lockout release for ${data.data.lockout_id}`);
+    const id = data.data.id;
+
+    await lockout.clear_lockout(id);
+    await data.client.emit("storage_state", await database.get_storage_statues())
+  });
+
   client.emitter.on("apply_action", async (data) => {
     const calling_client = data['client'];
     const action_request = data['data'];
@@ -294,7 +357,7 @@ const main = async () => {
     const action_id = action_request['action_id'];
 
     // Attempt to resolve the work order
-    const work_order = await database.get_work_order(woid).catch(async (error) => {
+    let work_order = await database.get_work_order(woid).catch(async (error) => {
       logger.error(`Error fetching work order ${woid} - ${error}`)
       await calling_client.emit("server_error", {error: error, message: "No message available."});
       return;
@@ -307,6 +370,16 @@ const main = async () => {
       })
       return;
     }
+
+    if (work_order.type != "work_order") {
+      await calling_client.emit("server_error", {
+        "error": "action_apply_wo_type_invalid",
+        "message": "Returned work order type is invalid, cannot continue."
+      })
+      return;
+    }
+
+    work_order = work_order.payload;
 
     // Find PCRT state ID for the requested action
     let pcrt_state = undefined;
@@ -369,7 +442,8 @@ const main = async () => {
           // TODO: Handle this dynamically.
           if (state_wip && location.type != "wip") continue;
           if (!state_wip && location.type != "complete") continue;
-          if (location.type == "oversize") continue;
+          if (location.type == "oversize") continue; // Skip oversize locations, these are handled separately.
+          if (await lockout.get_lockout_for_bay(location.id)) continue; // Skip locked bays
           
           logger.debug(`consideration for ${location.name} continued, checking asset location.`)
 
@@ -406,12 +480,30 @@ const main = async () => {
           });
           return;
         }
+
+        // Add private notes for location change/assignment
+        if (work_order.location == undefined) {
+          // A location has never been set
+          if (config['notes']['location_assigned']) {
+            await database.add_private_note(woid, `Location assigned: ${location.name}`);
+          }
+        } else {
+          // This is a change of location
+          if (config['notes']['location_changed']) {
+            await database.add_private_note(woid, `Asset location changed from ${work_order.location.name} to ${location.name} by the server.`);
+          }
+        }
       }
     }
     
 
     // PCRT state has been resolved to a work order, the change can be applied to the database.
     const result = await database.set_work_order_state(woid, pcrt_state, new_state);
+
+    // Add private note to work order regarding state change
+    if (config['notes']['status_changed']) {
+      await database.add_private_note(woid, `Asset state changed to '${new_state['alias']}' by scanner.`);
+    }
 
     if (!result) {
       logger.error("Failed to update state.");

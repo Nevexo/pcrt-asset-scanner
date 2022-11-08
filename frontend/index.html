@@ -102,6 +102,64 @@
     </div>
   </div>
 
+  <!-- Lockout create modal -->
+  <div class="modal fade modal-xl" id="lockout-create-modal" tabindex="-1" role="dialog" aria-labelledby="lockout-create-modal-label" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h5 class="modal-title text-white">Create new Lockout</h5>
+          <div class="alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> Authorised engineering use only!
+          </div>
+        </div>
+        <div class="modal-body">
+          <p id="lockout-create-modal-text">Creating a new lockout on bay {}.</p>
+          <hr>
+          <h5>Engineer Assign</h5>
+          <hr>
+          <div class="container" id="lockout-create-modal-actions">
+            <div class="row">
+              <p>No actions available, something is very wrong here.</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> Lockouts are stored locally to PCRT-Scan, engineers can still manually assign items to locked-out bays, be very careful manually assigning bays.
+          </div>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lockout view modal -->
+  <div class="modal fade modal-xl" id="lockout-view-modal" tabindex="-1" role="dialog" aria-labelledby="lockout-view-modal-label" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-primary">
+          <h5 class="modal-title text-white">Bay Lockout Manager</h5>
+          <div class="alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> Authorised engineering use only!
+          </div>
+        </div>
+        <div class="modal-body">
+          <p id="lockout-view-modal-text">A lockout has been replaced on bay {} by engineer {}.</p>
+          <hr>
+          <h5>Lockout Actions</h5>
+          <hr>
+          <div class="container" id="lockout-create-modal-actions">
+            <div class="row" id="lockout-view-modal-actions">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <!-- New scanned item modal -->
   <div class="modal fade modal-xl" id="scan-modal" tabindex="-1" role="dialog" aria-labelledby="scan-modal-label" aria-hidden="true">
     <div class="modal-dialog" role="document">

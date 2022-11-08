@@ -23,6 +23,13 @@ const gen_grid = (entries) => {
       let title_text_style = "";
       let bi_icon = "bi-app"
       
+      if (col['status'] == "lockout") {
+        style = "card-body bg-dark";
+        sub_text_style = "text-white";
+        title_text_style = "text-white";
+        bi_icon = "bi-lock"
+      }
+
       if (col['status'] == "error") {
         style = "card-body bg-danger";
         sub_text_style = "text-light";
@@ -65,7 +72,13 @@ const gen_grid = (entries) => {
         bi_icon = "bi-basket-fill"
       }
 
-      html += `<div class='card'><div class='${style}'>`;
+      // Check if the bay is available or in lockout, if not, don't allow the user to click it.
+      if (col['status'] == "available" || col['status'] == "lockout") {
+        html += `<a style='text-decoration: none; color: black;' onclick='prepare_lockout("${col['slid']}")'><div class='card'><div class='${style}'>`;
+      } else {
+        html += `<a style='text-decoration: none; color: black;'><div class='card'><div class='${style}'>`;
+      }
+
       html += `<div class='card-title ${title_text_style}'>`
       if (col['high_priority']) {
           html += `<div class="spinner-grow spinner-grow-sm" role="status"></div>  `
@@ -73,7 +86,7 @@ const gen_grid = (entries) => {
       html += `<i class='bi ${bi_icon}'></i> ${col['title']}`;
       html += `</div>`;
       html += `<div class='card-subtitle mb-2 ${sub_text_style}'>${col['bay_status']}</div>`;
-      html += '</div></div></div>' // TODO: Do that better...
+      html += '</div></div></div></a>' // TODO: Do that better...
     }
 
     html += '</div>'

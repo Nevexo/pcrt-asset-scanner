@@ -5,7 +5,7 @@ let socket;
 
 const config = {
   "server": "http://localhost:3500",
-  "api_vers": 1
+  "api_vers": 2
 }
 
 const state_icons = {
@@ -115,6 +115,61 @@ class ToastAlert {
   async hide() {await this.toast.hide()};
 }
 
+class LockoutCreateModal {
+  constructor() {
+    this.text = document.getElementById("lockout-create-modal-text");
+    this.buttons = document.getElementById("lockout-create-modal-actions");
+    this.modal = new bootstrap.Modal("#lockout-create-modal");
+    this.visible = false;
+  }
+  
+  async show(lockout, bay) {
+    this.text.innerHTML = `No lockouts have been assigned to ${bay}. Only create a lockout as a temporary measure, for example, if you are unsure why an asset is in a specific bay. Select your name below to create a lockout.`;
+
+    // Create engineer buttons
+    this.buttons.innerHTML = "";
+    console.dir(lockout)
+    for (let engineer of lockout.engineers) {
+      let btn = document.createElement("button");
+      btn.className = "btn btn-block btn-primary";
+      btn.innerText = engineer;
+      btn.addEventListener("click", () => {
+        this.hide();
+        socket.emit("lockout_create", {slid: bay, engineer: engineer});
+      });
+
+      this.buttons.appendChild(btn);
+
+    }
+    await this.modal.show();
+    this.visible = true;
+  }
+  async hide() {
+    if (this.visible) await this.modal.hide();
+    this.visible = false;
+  }
+}
+
+class LockoutViewModal {
+  constructor() {
+    this.text = document.getElementById("lockout-view-modal-text");
+    this.buttons = document.getElementById("lockout-view-modal-actions");
+    this.modal = new bootstrap.Modal("#lockout-view-modal");
+    this.visible = false;
+  }
+  
+  async show(lockout) {
+    this.text.innerHTML = `Lockout ${lockout.id} is assigned to ${lockout.engineer} and was created at ${new Date(lockout.timestamp).toISOString()}.`;
+    this.buttons.innerHTML = `<button type="button" class="btn btn-primary" onclick="lockout_release(${lockout.id})">Release Lockout</button>`;
+    await this.modal.show();
+    this.visible = true;
+  }
+  async hide() {
+    if (this.visible) await this.modal.hide();
+    this.visible = false;
+  }
+}
+
 class ScanModal {
   constructor() {
     this.title = document.getElementById("scan-modal-label");
@@ -192,6 +247,19 @@ const gen_action_buttons = (woid, actions) => {
   return html;
 }
 
+const prepare_lockout = async (slid) => {
+  // Send a lockout_info request to the server#
+  await toast.show("Requesting lockout Information", `Fetching data on ${slid}`, slid);
+  socket.emit("get_lockout_info", {"slid": slid});
+}
+
+const lockout_release = async (lockout_id) => {
+  // Trigger a server lockout release
+  await toast.show("Releasing Lockout", `Releasing lockout ${lockout_id}`, lockout_id);
+  view_lockout_modal.hide();
+  socket.emit("clear_lockout", {"id": lockout_id});
+}
+
 const hide_clashes = async () => {
   document.getElementById("clash-alert").style.display = "none";
 }
@@ -205,7 +273,11 @@ const show_clashes = async (location_name, work_orders) => {
 
   for (let wo in work_orders) {
     wo = work_orders[wo];
-    text += `${wo.customer.name} (${wo.id}) `
+    if (wo.type == "work_order") {
+      text += `${wo.payload.customer.name} (${wo.payload.id}) `
+    } else if (wo.type == "lockout") {
+      text += `lockout (${wo.payload.id}) `
+    } else continue; 
   }
 
   alert_text.innerText = text + " RESOLVE ASAP!";
@@ -233,6 +305,8 @@ const toast = new ToastAlert();
 const info = new InfoModal();
 const error_modal = new ErrorModal();
 const scan_modal = new ScanModal();
+const create_lockout_modal = new LockoutCreateModal();
+const view_lockout_modal = new LockoutViewModal();
 
 const main = async () => {
 
@@ -298,6 +372,20 @@ const main = async () => {
     loading_modal.hide();
 
     scan_modal.show(data);
+  })
+
+  socket.on('lockout_info', async (data) => {
+    console.log("Lockout info:", data);
+    error_modal.hide();
+    loading_modal.hide();
+
+    if (data.lockout) {
+      // Lockout in place, show info modal
+      view_lockout_modal.show(data.lockout);
+    } else {
+      // No lockout in place, show create lockout modal.
+      create_lockout_modal.show(data, data.slid);
+    }
   })
 
   socket.on('ack_action', async (data) => {
@@ -372,40 +460,50 @@ const main = async () => {
         for (let col in row) {
           col = row[col];
           let entry_col = {
-            "title": col['name']
+            "title": col['name'],
+            "slid": col['id']
           }
-
+          
+          console.dir(col)
           if (col.hasOwnProperty('work_order')) {
-            entry_col['title'] = `${col['name']} (${col['work_order']['id']})`
-            // Bay is in use 
-            switch(col['work_order']['status']['id']) {
-              case 1: 
-                // In storage
-                entry_col['status'] = "wip";
-                break;
-              case 2:
-                // On the bench
-                entry_col['status'] = "bench";
-                break;
-              case 4:
-                // Complete
-                entry_col['status'] = "complete";
-                break;
-              case 3:
-                // Waiting for customer
-                entry_col['status'] = "customer";
-                break;
-              case 101:
-                // Waiting for parts
-                entry_col['status'] = "parts";
-                break;
-              default:
-                // Any other system status
-                entry_col['status'] = "bench";
-                break;
+            if (col['work_order']['type'] == "work_order") {
+              col['work_order'] = col['work_order']['payload'] // Extract payload from work_order (v2 api compat)
+              entry_col['title'] = `${col['name']} (${col['work_order']['id']})`
+              // Bay is in use 
+              console.log(col['work_order']['status']['id'])
+              switch(col['work_order']['status']['id']) {
+                case 1: 
+                  // In storage
+                  entry_col['status'] = "wip";
+                  break;
+                case 2:
+                  // On the bench
+                  entry_col['status'] = "bench";
+                  break;
+                case 4:
+                  // Complete
+                  entry_col['status'] = "complete";
+                  break;
+                case 3:
+                  // Waiting for customer
+                  entry_col['status'] = "customer";
+                  break;
+                case 101:
+                  // Waiting for parts
+                  entry_col['status'] = "parts";
+                  break;
+                default:
+                  // Any other system status
+                  entry_col['status'] = "bench";
+                  break;
+              }
+  
+              entry_col['bay_status'] = col['work_order']['customer']['name'];
+            } else if (col['work_order']['type'] == "lockout") {
+              entry_col['title'] = `${col['name']}`
+              entry_col['status'] = "lockout";
+              entry_col['bay_status'] = `Bay locked by ${col['work_order']['payload']['engineer']}`;
             }
-
-            entry_col['bay_status'] = col['work_order']['customer']['name'];
 
           } else if (col.hasOwnProperty('error')) {
             if (col['error'] === "clash") {

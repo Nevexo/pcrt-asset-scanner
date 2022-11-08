@@ -62,3 +62,17 @@ storage_prefixes:
   wip: A
   complete: B
   oversize: O
+
+lockouts:
+  database_file: lockouts.db
+  engineers:
+    - Steven
+    - Geoff
+    - Gregg
+
+notes:
+  # These settings specify whether or not a private note should be added to a work order when 
+  # PCRT-Scan makes a change. 
+  location_assigned: yes # Add a note when a location is first assigned.
+  location_changed: yes # Add a note when the location is changed.
+  status_changed: yes # Add when the status of a work order changes.
