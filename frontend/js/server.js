@@ -110,6 +110,38 @@ class AssetLocationModal {
   };
 }
 
+class DailyReportModal {
+  constructor() {
+    this.date = document.getElementById("daily-report-modal-date");
+    this.scans = document.getElementById("daily-report-modal-scans");
+    this.actions_applied = document.getElementById("daily-report-modal-actions");
+    this.actions = document.getElementById("daily-report-modal-actions-list");
+    this.lockouts_created = document.getElementById("daily-report-modal-lockouts-created");
+    this.lockouts_cleared = document.getElementById("daily-report-modal-lockouts-cleared");
+    this.modal = new bootstrap.Modal("#daily-report-modal");
+    this.visible = false;
+  }
+
+  async show(data) {
+    this.date.innerHTML = `Day Commencing: <b>${new Date().toLocaleDateString()}</b>`
+    this.scans.innerText = data.scans;
+    this.actions_applied.innerText = data.action_count;
+    this.actions.innerHTML = "";
+    for (let action in data.actions) {
+      this.actions.innerHTML += `<li><b>${action}: </b>${data.actions[action]}</li>`
+    }
+    this.lockouts_created.innerText = data.lockouts_created;
+    this.lockouts_cleared.innerText = data.lockouts_cleared;
+    await this.modal.show()
+    this.visible = true;
+  };
+
+  async hide() {
+    if (this.visible) await this.modal.hide()
+    this.visible = false;
+  };
+}
+
 class ErrorModal {
   constructor() {
     this.icon = document.getElementById("error-modal-icon");
@@ -195,7 +227,7 @@ class LockoutViewModal {
   }
   
   async show(lockout) {
-    this.text.innerHTML = `Lockout ${lockout.id} is assigned to ${lockout.engineer} and was created at ${new Date(lockout.timestamp).toISOString()}.`;
+    this.text.innerHTML = `Lockout ${lockout.id} is assigned to ${lockout.engineer} and was created at ${new Date(lockout.timestamp).toLocaleDateString()}.`;
     this.buttons.innerHTML = `<button type="button" class="btn btn-primary" onclick="lockout_release(${lockout.id})">Release Lockout</button>`;
     await this.modal.show();
     this.visible = true;
@@ -289,6 +321,11 @@ const prepare_lockout = async (slid) => {
   socket.emit("get_lockout_info", {"slid": slid});
 }
 
+const request_daily_report = async () => {
+  // Request a new storage status poll
+  socket.emit("get_daily_report");
+}
+
 const lockout_release = async (lockout_id) => {
   // Trigger a server lockout release
   await toast.show("Releasing Lockout", `Releasing lockout ${lockout_id}`, lockout_id);
@@ -344,6 +381,7 @@ const scan_modal = new ScanModal();
 const create_lockout_modal = new LockoutCreateModal();
 const view_lockout_modal = new LockoutViewModal();
 const asset_location_modal = new AssetLocationModal();
+const daily_report_modal = new DailyReportModal();
 
 const main = async () => {
 
@@ -451,6 +489,13 @@ const main = async () => {
       await asset_location_modal.show("return", data.location.name)
       //await info.show("Return Asset to Location", `Please return this asset to it's storage bay <b>${data.location.name}.</b>`)
     }
+  })
+
+  socket.on('daily_report', async (data) => {
+    console.log("Got daily report:", data);
+    error_modal.hide();
+    loading_modal.hide();
+    daily_report_modal.show(data);
   })
 
   socket.on('storage_state', async (storage_bays) => {

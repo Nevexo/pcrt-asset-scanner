@@ -123,6 +123,31 @@
     </div>
   </div>
 
+  <!-- Daily Report Modal -->
+  <div class="modal fade" id="daily-report-modal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="daily-report-modal-title">Daily Report</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="daily-report-modal-body">
+          <h6 id="daily-report-modal-date"></h6>
+          <p>From <b>00:00:00</b> to <b>23:59:59</b></p>
+          <hr>
+          <p><b>Total Scans: </b><p id="daily-report-modal-scans"></p></p>
+          <p><b>Total Actions: </b><p id="daily-report-modal-actions"></p></p>
+          <p><b>Actions Breakdown:</b><ul id="daily-report-modal-actions-list"></ul></p>
+          <p><b>Lockouts Created: </b><p id="daily-report-modal-lockouts-created"></p></p>
+          <p><b>Lockouts Cleared: </b><p id="daily-report-modal-lockouts-cleared"></p></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Lockout create modal -->
   <div class="modal fade modal-xl" id="lockout-create-modal" tabindex="-1" role="dialog" aria-labelledby="lockout-create-modal-label" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -244,7 +269,9 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          
+          <div class="d-flex">
+            <button class="btn btn-outline-primary" type="button" onclick="request_daily_report(); return true;">Daily Report</button>
+          </div>
         </ul>
         <div class="d-flex">
           <h5 id="scan-status" class="text-danger">Not Ready</h5>

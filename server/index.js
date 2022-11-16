@@ -8,6 +8,8 @@ const db = require("./database.js");
 const scan = require("./scanner.js")
 const clients = require("./client.js")
 const lockouts = require("./lockouts.js")
+const transactions = require("./transactions.js")
+const cron = require("cron").CronJob;
 
 const child_process = require("child_process");
 
@@ -43,9 +45,28 @@ const main = async () => {
   }
   logger.debug("configuration loaded")
 
+  // Ensure transactions are enabled if daily reports are enabled.
+  if (config.daily_report.enable && !config.transaction_logging.enable) {
+    logger.error("Daily reports are enabled, but transaction logging is not. Please enable transaction logging to use daily reports.")
+    process.exit(1)
+  }
+
   // Bring up lockouts handler
   logger.debug("starting lockouts handler")
   const lockout = new lockouts.Lockouts(logger, config);
+
+  // Bring up transactions handler
+  logger.debug("starting transactions handler")
+  const transaction = new transactions.Transactions(logger, config);
+
+  // Configure daily report cron job if enabled
+  if (config.daily_report.enable && config.daily_report.cron != undefined) {
+    logger.debug("creating daily reports cron job")
+    const daily_report_job = new cron(config.daily_report.cron, async () => {
+      logger.info("Daily report cron job triggered, generating report.")
+      await client.broadcast_message("daily_report", await transaction.daily_report())
+    }, null, true, "Europe/London");
+  }
 
   // Bring up database
   logger.debug("database load")
@@ -150,6 +171,9 @@ const main = async () => {
     // Successfully found the work order and customer, we can proceede.
     logger.debug("Scanned owner: " + wo.customer.name);
     logger.debug("Scanned work order problem: " + wo.problem);
+
+    // Log transaction for this scan
+    await transaction.log_transaction("scan", {"woid": wo.id})
 
     // Create a broadcast for this scan
     // This also lists the available options for the user, this may be handed off to the frontend
@@ -298,8 +322,6 @@ const main = async () => {
   // Handle request for lockout info
   client.emitter.on("get_lockout_info", async (data) => {
     // The client has requested lockout information for a given slid
-    if (!lockout.db) return;
-
     logger.debug(`Client requested lockout info for ${data.data.slid}`);
     const calling_client = data.client;
     const slid = data.data.slid;
@@ -324,8 +346,6 @@ const main = async () => {
 
   client.emitter.on("lockout_create", async (data) => {
     // The client has requested a new lockout
-    if (!lockout.db) return;
-
     logger.debug(`Client requested lockout creation for ${data.data.slid} for engineer: ${data.data.engineer}`);
 
     // Check for an existing work order
@@ -342,19 +362,35 @@ const main = async () => {
 
     await lockout.create_lockout(data.data.slid, data.data.engineer);
     await data.client.emit("storage_state", await database.get_storage_statues())
+    await transaction.log_transaction("lockout_change", {"slid": data.data.slid, "engineer": data.data.engineer, "action": "create"});
   });
 
   client.emitter.on("clear_lockout", async (data) => {
     // The client has requested a lockout release.
     // This accepts a lockout ID, not a bay ID.
-    if (!lockout.db) return;
-
     logger.debug(`Client requested lockout release for ${data.data.lockout_id}`);
     const id = data.data.id;
 
     await lockout.clear_lockout(id);
     await data.client.emit("storage_state", await database.get_storage_statues())
+    await transaction.log_transaction("lockout_change", {"slid": data.data.slid, "engineer": data.data.engineer, "action": "clear"});
   });
+
+  client.emitter.on("get_daily_report", async (data) => {
+    // Handle daily report request data
+    if (!config.daily_report.enable) {
+      // Daily reports are disabled.
+      await data.client.emit("server_error", {
+        "error": "daily_report_disabled",
+        "message": "Daily reports are disabled on this server."
+      })
+
+      return;
+    }
+
+    const report = await transaction.daily_report();
+    await data.client.emit("daily_report", report);
+  })
 
   client.emitter.on("apply_action", async (data) => {
     const calling_client = data['client'];
@@ -499,6 +535,7 @@ const main = async () => {
             await database.add_private_note(woid, `Asset location changed from ${work_order.location.name} to ${location.name} by the server.`);
           }
         }
+
       }
     }
     
@@ -540,6 +577,9 @@ const main = async () => {
 
     await client.broadcast_message("ack_action", ack_operand);
     logger.info(`Performed action ${action_id} on work order ${woid} successfully!`)
+
+    // Log transaction
+    await transaction.log_transaction("action_applied", {woid: woid, action: action_id, location: location.name, new_state_alias: new_state['alias']});
   })
 
   // If execution reaches this far, we can safely assume the server is up and running.

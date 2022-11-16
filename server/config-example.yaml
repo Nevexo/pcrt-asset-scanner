@@ -64,16 +64,17 @@ storage_prefixes:
   oversize: O
 
 lockouts:
-  # PCRT-Scan lockouts allow bays to be temporarily locked-out from use, for example, if an asset is placed in a bay that has
-  # not been assigned a work order. Remove this section to disable lockouts.
-  # Lockouts uses an sqlite database stored on the server, rather than storing lockout details on the PCRT database
-  # this is to avoid modifying the typical PCRT schema. 
-  # Engineers must be defined in the lockouts section, these are people able to create lockouts.
   database_file: lockouts.db
   engineers:
     - Steven
     - Geoff
     - Gregg
+
+transaction_logging:
+  # Transactions are any operation performed by PCRT-Scan that are triggered by a user, this includes all scans, 
+  # applied actions and lockouts created. This is required for daily reports or transaction history to work.
+  enable: yes
+  database_file: transactions.db
 
 notes:
   # These settings specify whether or not a private note should be added to a work order when 
@@ -81,3 +82,10 @@ notes:
   location_assigned: yes # Add a note when a location is first assigned.
   location_changed: yes # Add a note when the location is changed.
   status_changed: yes # Add when the status of a work order changes.
+
+daily_report:
+  # This option enables the daily report feature, this can be invoked at any time
+  # or automatically by a crontab, it shows the number of transactions completed in the day.
+  # Please note that transaction logging must be enanbled in the database section
+  enable: yes
+  cron: "30 17 * * *"

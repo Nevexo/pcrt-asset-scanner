@@ -90,6 +90,15 @@ class Client {
         "data": data
       })
     })
+
+    client.on("get_daily_report", async (data) => {
+      this.logger.debug("Processing daily report request...");
+      // Forward to main handler.
+      this.emitter.emit("get_daily_report", {
+        "client": client,
+        "data": data
+      })
+    })
   }
 
   async broadcast_message(topic, message) {
