@@ -74,6 +74,42 @@ class InfoModal {
   };
 }
 
+class AssetLocationModal {
+  constructor() {
+    this.title = document.getElementById("asset-location-modal-title");
+    this.body = document.getElementById("asset-location-modal-body");
+    this.status = document.getElementById("asset-location-modal-status");
+    this.bay = document.getElementById("asset-location-modal-bay");
+    this.text = document.getElementById("asset-location-modal-text");
+    this.modal = new bootstrap.Modal("#asset-location-modal");
+    this.visible = false;
+  }
+
+  async show(status, bay) {
+    this.bay.innerText = bay;
+    if (status == "new") {
+      this.status.innerText = "NEW ASSET",
+      this.text.innerText = "This asset has been assigned a new bay that was previously empty. Please take it to this bay now."
+    } else if (status == "moved") {
+      this.status.innerText = "NEW BAY ASSIGNED",
+      this.text.innerText = "This asset has been moved to a new bay. Please place it in the new bay shown above, including any accessories still left in the original bay."
+    } else if (status == "return") {
+      this.status.innerText = "RETURN TO",
+      this.text.innerText = "This asset already has a bay that is still valid for the action performed, please return it to the bay displayed above."
+    } else {
+      this.status.innerText = "",
+      this.text.innerText = "I'm not really sure what's happened here, take the asset to the bay shown above."
+    }
+    await this.modal.show()
+    this.visible = true;
+  };
+
+  async hide() {
+    if (this.visible) await this.modal.hide()
+    this.visible = false;
+  };
+}
+
 class ErrorModal {
   constructor() {
     this.icon = document.getElementById("error-modal-icon");
@@ -307,6 +343,7 @@ const error_modal = new ErrorModal();
 const scan_modal = new ScanModal();
 const create_lockout_modal = new LockoutCreateModal();
 const view_lockout_modal = new LockoutViewModal();
+const asset_location_modal = new AssetLocationModal();
 
 const main = async () => {
 
@@ -408,9 +445,11 @@ const main = async () => {
 
     if (data['location_changed']) {
       // A new location has been selected, inform the user they must use this location.
-      await info.show("Location Chosen Automatically", `Please place this device in <b>${data.location.name}</b> <br><br><i class="bi bi-info-circle-fill"></i> If this bay is not available, please manually update it in PCRT and click refresh on the dashboard.<br><br><i class="bi bi-info-circle-fill"></i> <b>Please Note: </b> If this device has been moved between states, a new location may have been chosen. Please pay attention to this!`);
+      await asset_location_modal.show("moved", data.location.name)
+      //await info.show("Location Chosen Automatically", `Please place this device in <b>${data.location.name}</b> <br><br><i class="bi bi-info-circle-fill"></i> If this bay is not available, please manually update it in PCRT and click refresh on the dashboard.<br><br><i class="bi bi-info-circle-fill"></i> <b>Please Note: </b> If this device has been moved between states, a new location may have been chosen. Please pay attention to this!`);
     } else {
-      await info.show("Return Asset to Location", `Please return this asset to it's storage bay <b>${data.location.name}.</b>`)
+      await asset_location_modal.show("return", data.location.name)
+      //await info.show("Return Asset to Location", `Please return this asset to it's storage bay <b>${data.location.name}.</b>`)
     }
   })
 
