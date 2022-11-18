@@ -579,7 +579,7 @@ const main = async () => {
     logger.info(`Performed action ${action_id} on work order ${woid} successfully!`)
 
     // Log transaction
-    await transaction.log_transaction("action_applied", {woid: woid, action: action_id, location: location.name, new_state_alias: new_state['alias']});
+    await transaction.log_transaction("action_applied", {woid: woid, action: action_id, location: location.name || undefined, new_state_alias: new_state['alias']});
   })
 
   // If execution reaches this far, we can safely assume the server is up and running.
