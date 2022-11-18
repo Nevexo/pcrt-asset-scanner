@@ -7,7 +7,7 @@ const winston = require('winston');
 
 const manifest = {
     "type": "COM Scanner",
-    "version": "2.0"
+    "version": "2.1"
 }
 
 // Defaults to TMS for most serial chips, can be overridden with SCANNER_MANUFACTURER env var.
@@ -148,6 +148,14 @@ const main = async () => {
     port.on('data', async (data) => {
         const string = data.toString().trim();
         logger.debug(`incoming string: ${string} (length: ${string.length}) (limiter: ${process.env.DATA_LENGTH_LIMIT || 6})`);
+
+        if (string.startsWith("PCRT_QR_")) {
+            // Handle this as a QR code command trigger.
+            logger.info(`Got QR code trigger: ${string}`);
+            await socket.emit("qr_cmd", string.replace("PCRT_QR_", ""));
+            return;
+        }
+
         if (string.length > (process.env.DATA_LENGTH_LIMIT || 6)) {
             logger.warn("Invalid item scanned, will not forward to server.");
             return;
