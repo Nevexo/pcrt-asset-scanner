@@ -269,6 +269,23 @@ class ScanModal {
 
     this.buttons.innerHTML = buttons;
 
+    // Create QR codes for action buttons
+    for (let action in scan_data.options.states) {
+      // Create QR code for action
+      action = scan_data.options.states[action];
+
+      new QRCode(`qr-code-act-${scan_data.work_order.id}-${action['id']}`, {
+        text: `PCRT_QR_APPLY_ACT_${scan_data.work_order.id}_${action['id']}`,
+        margin: 10,
+        width: 100,
+        height: 100,
+        align: "center",
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+      });
+    }
+
     this.modal.show({'backdrop': 'static', 'keyboard': false});
     this.visible = true;
   }
@@ -306,8 +323,8 @@ const gen_action_buttons = (woid, actions) => {
     const name = action['pcrt_scan_state']['alias'] || action['name']
 
     html += "<div class='col'>"
-    html += '<div class="btn-group" style="width:100%">'
-    html += `<button type="button" onclick="perform_action('${action['pcrt_scan_state']['name']}', ${woid}); return true;" class="btn btn-block ${colour}"><i class="${icon}"></i> ${name}<br><br><img width="60px" src="/nyi.png"></button>`
+    html += '<div class="btn-group" style="width:100%;">'
+    html += `<button type="button" onclick="perform_action('${action['pcrt_scan_state']['name']}', ${woid}); return true;" class="btn btn-block ${colour}"><i class="${icon}"></i> ${name}<br><br><div style="display: flex; justify-content: center; align-items: center;" id='qr-code-act-${woid}-${action['id']}'></div></button>`
     html += "</div></div>"
   }
 
