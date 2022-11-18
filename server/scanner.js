@@ -60,6 +60,19 @@ class Scanner {
       await client.emit("ack", data);
     })
 
+    client.on('qr_apply_action', async (data) => {
+      // Handle "QR Commands" from the scanner, these are QR codes in the frontend
+      // that trigger backend actions.
+      this.logger.debug("scanner qr_cmd: " + data);
+
+      this.emitter.emit("qr_apply_action", {
+        "action_id": data.split()[0],
+        "work_order": data.split()[1]
+      })
+
+      await client.emit("ack", data);
+    })
+
     client.on('fault', async () => {
       this.logger.warn(`Fault reported by Scanner, alerting clients.`);
       await this.emitter.emit("scanner_faulted");

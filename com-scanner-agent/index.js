@@ -149,10 +149,10 @@ const main = async () => {
         const string = data.toString().trim();
         logger.debug(`incoming string: ${string} (length: ${string.length}) (limiter: ${process.env.DATA_LENGTH_LIMIT || 6})`);
 
-        if (string.startsWith("PCRT_QR_")) {
+        if (string.startsWith("PCRT_QR_APPLY_ACT_")) {
             // Handle this as a QR code command trigger.
             logger.info(`Got QR code trigger: ${string}`);
-            await socket.emit("qr_cmd", string.replace("PCRT_QR_", ""));
+            await socket.emit("qr_apply_action", string.replace("PCRT_QR_APPLY_ACT_", ""));
             return;
         }
 
