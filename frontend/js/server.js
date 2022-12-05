@@ -258,10 +258,11 @@ class ScanModal {
     const work_order = scan_data.work_order;
     const buttons = gen_action_buttons(scan_data.work_order.id, scan_data.options.states || [])
 
+    const open_date = new Date(work_order.open_date);
     this.title.innerHTML = `<i class="bi bi-qr-code"></i> Scanned Work Order - ${work_order.customer.name} (${work_order.customer.id})`;
     this.items.owner.innerHTML = `Owner: <i class="bi bi-person-fill"></i> ${work_order.customer.name} (${work_order.customer.company})`;
     this.items.status.innerHTML = `Status: <i class="${state_icons[work_order.status.pcrt_scan_state.name]}"></i> ${work_order.status.name}`;
-    this.items.check_in_date.innerHTML = `Check-in Date: <i class="bi bi-calendar-date"></i> ${new Date(work_order.open_date).toLocaleDateString()}`;
+    this.items.check_in_date.innerHTML = `Check-in Date: <i class="bi bi-calendar-date"></i> ${open_date.toLocaleDateString()} (${moment(open_date).fromNow()})`;
     this.items.problem.innerHTML = `${work_order.problem}`;
 
     if (scan_data.work_order.location != undefined) {
@@ -577,7 +578,8 @@ const main = async () => {
           if (col.hasOwnProperty('work_order')) {
             if (col['work_order']['type'] == "work_order") {
               col['work_order'] = col['work_order']['payload'] // Extract payload from work_order (v2 api compat)
-              entry_col['title'] = `${col['name']} (${col['work_order']['id']})`
+              const open_date = new Date(col['work_order']['open_date']); 
+              entry_col['title'] = `${col['name']} (${col['work_order']['id']}) - ${moment(open_date).fromNow()}`
               // Bay is in use 
               console.log(col['work_order']['status']['id'])
               switch(col['work_order']['status']['id']) {
@@ -660,6 +662,13 @@ const main = async () => {
   setInterval(async () => {
     await socket.emit("request_refresh")
   }, 5 * 60 * 1000)
+
+  // Update sys-time every second
+  setInterval(async () => {
+    const dom = document.getElementById("sys-time");
+    dom.innerHTML = moment().format("DD/MM/YY | HH:mm:ss");
+  }
+  , 1000);
 }
 
 main();

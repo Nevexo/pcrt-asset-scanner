@@ -16,6 +16,10 @@
   <!-- Socket.io -->
   <script src="https://cdn.socket.io/4.5.0/socket.io.min.js" integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k" crossorigin="anonymous"></script>
 
+  <!-- Moment -->
+  <!-- TODO: Replace MomentJS with a better system -->
+  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+
   <title>PCRT Asset Scanner</title>
 </head>
 <body>
@@ -280,9 +284,16 @@
             <button class="btn btn-outline-primary" type="button" onclick="request_daily_report(); return true;">Daily Report</button>
           </div>
         </ul>
-        <div class="d-flex">
-          <h5 id="scan-status" class="text-danger">Not Ready</h5>
-        </div>
+        <ul>
+          <div class="d-flex">
+            <h5 class="text-secondary" id="sys-time"></h5>
+          </div>
+        </ul>
+        <ul>
+          <div class="d-flex">
+            <h5 id="scan-status" class="text-danger">Not Ready</h5>
+          </div>
+        </ul>
       </div>
     </div>
   </nav>
