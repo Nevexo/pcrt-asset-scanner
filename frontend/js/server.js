@@ -245,7 +245,8 @@ class ScanModal {
       "owner": document.getElementById("scan-modal-owner"),
       "status": document.getElementById("scan-modal-current-status"),
       "problem": document.getElementById("scan-modal-problem"),
-      "location": document.getElementById("scan-modal-location")
+      "location": document.getElementById("scan-modal-location"),
+      "check_in_date": document.getElementById("scan-modal-check-in-date"),
     }
     this.buttons = document.getElementById("scan-modal-actions");
     this.modal = new bootstrap.Modal("#scan-modal");
@@ -259,6 +260,7 @@ class ScanModal {
     this.title.innerHTML = `<i class="bi bi-qr-code"></i> Scanned Work Order - ${work_order.customer.name} (${work_order.customer.id})`;
     this.items.owner.innerHTML = `Owner: <i class="bi bi-person-fill"></i> ${work_order.customer.name} (${work_order.customer.company})`;
     this.items.status.innerHTML = `Status: <i class="${state_icons[work_order.status.pcrt_scan_state.name]}"></i> ${work_order.status.name}`;
+    this.items.check_in_date.innerHTML = `Check-in Date: <i class="bi bi-calendar-date"></i> ${new Date(work_order.open_date).toLocaleDateString()}`;
     this.items.problem.innerHTML = `${work_order.problem}`;
 
     if (scan_data.work_order.location != undefined) {
