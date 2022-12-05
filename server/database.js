@@ -128,6 +128,9 @@ class Database {
     const states = await this.get_asset_states();
     const locations = await this.get_storage_locations()
 
+    // TODO: Refactor this, requesting notes should not be done here.
+    const notes = await this.get_public_notes(wo.woid);
+
     let work_order = {"type": "work_order", "payload":
     {
       "id": wo.woid,
@@ -136,6 +139,7 @@ class Database {
       "status": states[wo.pcstatus.toString()] || wo.pcstatus || undefined,
       "open_date": new Date(wo.dropdate).toISOString(),
       "location": locations[wo.slid] || undefined,
+      "notes": notes || [],
     }}
     return work_order
   }
@@ -363,6 +367,24 @@ class Database {
     })
 
     return true;
+  }
+
+  async get_public_notes(woid) {
+    // Get public notes for a work order
+    this.logger.debug(`getting public notes for ${woid}`)
+    const result = await this.connection.query(`SELECT * FROM wonotes WHERE woid = ${mysql.escape(woid)} AND notetype = 0`)
+    let notes = [];
+
+    for (let note in result) {
+      notes.push({
+        "id": result[note].noteid,
+        "content": result[note].thenote,
+        "author": result[note].noteuser,
+        "timestamp": result[note].notetime
+      })
+    }
+
+    return notes;
   }
 }
 

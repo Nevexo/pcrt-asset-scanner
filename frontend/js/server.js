@@ -250,6 +250,7 @@ class ScanModal {
     }
     this.buttons = document.getElementById("scan-modal-actions");
     this.modal = new bootstrap.Modal("#scan-modal");
+    this.notes = document.getElementById("scan-modal-notes");
     this.visible = false;
   }
 
@@ -271,6 +272,12 @@ class ScanModal {
 
     this.buttons.innerHTML = buttons;
 
+    if (work_order.notes) {
+      this.notes.innerHTML = gen_wo_notes(work_order.notes);
+    } else {
+      this.notes.innerText = "No Engineering Notes Logged";
+    }
+
     this.modal.show({'backdrop': 'static', 'keyboard': false});
     this.visible = true;
   }
@@ -289,6 +296,22 @@ const request_refresh = async () => {
   socket.emit("request_refresh");
   dom_container_pending.style.display = "block";
   await toast.show("Refresh Requested", "Refreshing storage view...", "Pending")
+}
+
+const gen_wo_notes = (notes) => {
+  let html = "<div class='row'>";
+  for (let note of notes) {
+    const date = new Date(note.timestamp);
+    html += `<div class="col-6">
+      <div class="card">
+        <div class="card-body bg-secondary text-light">
+          <h5 class="card-title">${note.author} - ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</h5>
+          <p class="card-text">${note.content}</p>
+        </div>
+      </div>
+    </div>`;
+  }
+  return html += "</div>";
 }
 
 const gen_action_buttons = (woid, actions) => {
