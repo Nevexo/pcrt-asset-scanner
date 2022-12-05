@@ -147,6 +147,15 @@ PCRT-Scan will calculate the flow between states automatically when used.
 ## PCRT-Scan Options
 This section covers options specific to PCRT-Scan. These features are configured in the config.yaml file or via environment variables.
 
+### Logging
+PCRT-Scan server and com-scanner-agent currently only log to stdout, log files will be created in future versions.
+
+The log level can be specified by setting the `LOG_LEVEL` environment variable before starting the service. 
+
+By default, the `info` level is used, though this can be increased to `warning` or `error` to reduce the logging to console.
+
+It is not currently possible to completely silent the output of PCRT-Scan.
+
 ### Lockouts
 Sometimes, engineers may wish to temporarily lock a bay out from use, for example, when they are using the bay to store a company asset that does not have a work order. 
 
@@ -199,3 +208,30 @@ If enabled, the frontend will display a daily report button that can be clicked 
 
 Once the cron fires, the frontend will automatically display the daily report. This, for example, can be used to show the daily report at end-of-play.
 
+### com-scanner-agent
+
+The serial scanner agent (com-scanner-agent) can be used with any serial-based scanner, whether that's a USB one (such as the Eyoyo device we use) or one connected to a COM interface on the terminal computer.
+
+com-scanner-agent must run on the terminal computer and must have network communication with the PCRT-Scan Server, whether it's on the loopback or across a LAN.
+
+#### Configuration Envioronment Variables
+These variables can be specified to set options for com-scanner-agent, though it has default specified.
+
+```
+ENV VARIABLE            DESCRIPTION                                    DEFAULT
+=============================================================================================
+SCANNER_MANUFACTURER    The chip vendor in your scanner                TMS
+PORT_OVERRIDE           Specify a port to use rather than auto search  AUTO
+API_SERVER_URL          URL of PCRT-Scan Server                        http://localhost:3000
+COM_BAUD                Baud rate of your scanner                      9600
+COM_DATA_BITS           Serial data bits setting                       8
+COM_PARITY              Serial parity bit setting                      none
+COM_STOP_BITS           Serial stop bits setting                       1
+COM_FLOW_CONTROL        Enable/disable flow control                    false
+DATA_LENGTH_LIMIT       Limit for size of data read from scanner       6
+```
+
+## Debugging and Contributions
+Issues and pull requests are very welcome! 
+
+To view debugging log for PCRT-Scan Server or com-scanner-agent, set the `LOG_LEVEL` environment variable to `debug` and restart the service.
