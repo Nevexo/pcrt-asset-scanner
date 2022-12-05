@@ -384,7 +384,7 @@ class Database {
       })
     }
 
-    return notes;
+    return notes.reverse();
   }
 }
 
