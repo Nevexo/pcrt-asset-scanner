@@ -39,6 +39,26 @@ const slice_array = (arr, chunkSize) => {
   return res;
 }
 
+class WelcomeModal {
+  constructor() {
+    this.modal = new bootstrap.Modal("#welcome-modal")
+    this.version_info = document.getElementById("version-info");
+  }
+
+  async show(api_version, scan_count) {
+    if (scan_count) {
+      this.version_info.innerText = `API Version: ${api_version} | Total Scans: ${scan_count}`;
+    } else {
+      this.version_info.innerText = `API Version: ${api_version}`;
+    }
+    this.modal.show();
+  }
+
+  async hide() {
+    this.modal.hide();
+  }
+}
+
 class LoadingModal {
   constructor() {
     this.message = "Thinking about it...";
@@ -410,6 +430,7 @@ const create_lockout_modal = new LockoutCreateModal();
 const view_lockout_modal = new LockoutViewModal();
 const asset_location_modal = new AssetLocationModal();
 const daily_report_modal = new DailyReportModal();
+const welcome_modal = new WelcomeModal();
 
 const main = async () => {
   // Setup audio
@@ -442,6 +463,8 @@ const main = async () => {
       status_text.innerText = "Ready to Scan";
       status_text.className = "text-success";
     }
+
+    welcome_modal.show(data['api_version'], data['scan_count'] || undefined);
   });
 
   socket.on('disconnect', () => {

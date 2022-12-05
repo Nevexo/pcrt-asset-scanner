@@ -117,6 +117,22 @@ class Transactions {
     })
   }
 
+  async scan_odometer() {
+    // Count all scans performed by the system.
+    if (!this.config.transaction_logging.enable) return;
+
+    return new Promise((resolve, reject) => {
+      this.db.get("SELECT COUNT(*) as count FROM transactions WHERE transaction_type = ?", TransactionType.scan, (error, row) => {
+        if (error) {
+          this.logger.error(error);
+          throw new Error("transaction_read_fail");
+        }
+
+        resolve(row.count);
+      })
+    })
+  }
+
   async daily_report() {
     // Generate a daily report.
     if (!this.config.transaction_logging.enable) return;

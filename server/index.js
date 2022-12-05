@@ -307,7 +307,8 @@ const main = async () => {
       "api_version": 2, 
       "api_name": "pcrt_scanner",
       "connect_time": new Date().toISOString(),
-      "scanner_ready": scanner.scanner_connected
+      "scanner_ready": scanner.scanner_connected,
+      "scan_count": await transaction.scan_odometer() || undefined,
     });
 
     // Send the client the current storage state.
