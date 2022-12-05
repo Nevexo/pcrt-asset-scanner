@@ -314,10 +314,10 @@ class ScanModal {
 const request_refresh = async () => {
   // Request a new storage status poll
   const toast = new ToastAlert();
-  const dom_container_pending = document.getElementById("grid-data-pending");
+  document.getElementById("grid").innerHTML = "";
 
+  loading_modal.show("Refreshing Grid Data");
   socket.emit("request_refresh");
-  dom_container_pending.style.display = "block";
   await toast.show("Refresh Requested", "Refreshing storage view...", "Pending")
 }
 
@@ -577,6 +577,7 @@ const main = async () => {
     const dom_container_pending = document.getElementById("grid-data-pending");
     dom_container_pending.style.display = "block";
     await hide_clashes();
+    loading_modal.hide();
 
     // Split storage bays into sections (by the storage_type)
     // For example, the A prefixed bays in our installation are 'work-in-progress' this is show the bays can be split correctly.
