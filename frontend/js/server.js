@@ -451,6 +451,10 @@ const main = async () => {
     await loading_modal.hide();
     toast.show("Server Hello", "Got hello from server!", "Just Now");
 
+    document.getElementById("navbar").style.display = "block";
+    document.getElementById("bay-legend").style.display = "block";
+    document.getElementById("xmas-lights").style.display = "block";
+
     // Confirm API version
     if (data.api_version != config.api_vers) {
       info.show("API Version Mismatch", "The server is running an incompatible API version. Please update your client.");
@@ -470,7 +474,14 @@ const main = async () => {
   socket.on('disconnect', () => {
     console.log('Disconnected from server!');
     toast.show("Disconnected", "Lost connection from local server.", "Just Now")
-    loading_modal.show("Reconnecting to server...");
+    // loading_modal.show("Reconnecting to server...");
+
+    document.getElementById("navbar").style.display = "none";
+    document.getElementById("bay-legend").style.display = "none";
+    document.getElementById("xmas-lights").style.display = "none";
+    document.getElementById("grid").innerHTML = "";
+
+    document.getElementById("grid-data-pending").style.display = "block";
   })
 
   socket.on('scanner_status', async (status) => {

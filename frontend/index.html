@@ -354,7 +354,7 @@
   </div>
 
 
-  <nav class="navbar navbar-expand-lg bg-dark">
+  <nav class="navbar navbar-expand-lg bg-dark" id="navbar" style="display: none;">
     <div class="container-fluid">
       <a class="navbar-brand text-white" href="#"><i class="bi bi-tree-fill"></i> PCRT-Scanmas</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -385,7 +385,7 @@
     </div>
   </nav>
 
-  <div class="conatiner">
+  <div class="conatiner" id="bay-legend" style="display: none;">
     <nav class="navbar navbar-dark bg-dark">
       <div class="container-fluid">
         <span class="navbar-text">
@@ -414,7 +414,7 @@
   </div>
 
   <!--  Christmas Lights -->
-<ul class="lightrope">
+<ul class="lightrope" id="xmas-lights" style="display: none;">
 <li></li>
 <li></li>
 <li></li>
@@ -459,22 +459,20 @@
 <li></li>
 </ul>
 
-  <div class="container" id="grid-data-pending">
-    <div class="card">
-      <h5 class="card-header">PCRT-Scan</h5>
+  <div class="container" id="grid-data-pending" stlye="">
+    <div class="card bg-dark text-light">
       <div class="card-body">
-        <h5 class="card-title">
+        <h5 class="card-title" style="text-align: center;">Welcome To</h5>
+        <h2 class="card-title" style="text-align: center;">
           <div class="spinner-border" role="status">
             <span class="visually-hidden">Loading...</span>
           </div>
-
-            Data Pending...
-        </h5>
-        <p class="card-text">
-          Please wait while the database connects, this may take a moment.<br>
-          If this message does not clear, please check all services and network connections are available
-          and restart PCRT-Scan.
+          PCRT-Scan
+        </h2>
+        <p class="card-text" style="text-align: center;">
+          Waiting for PCRT-Scan server to connect.
         </p>
+        <p class="card-text text-muted" style="text-align: center;">If this message does not clear, please check the PCRT-Scan services are running, and are correctly configured.</p>
       </div>
     </div>
   </div>
@@ -482,7 +480,7 @@
     <!-- Too be filled by gridgen -->
   </div>
 
-  <div class="alert alert-danger" role="alert" id="clash-alert">
+  <div class="alert alert-danger" role="alert" id="clash-alert" style="display: none;">
     <i class="bi bi-exclamation-triangle-fill" id="clash-alert-text"></i> 
   </div>
 
