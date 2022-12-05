@@ -559,7 +559,7 @@ const main = async () => {
 
     // Emit acknolodgement and update the storage states.
     await client.broadcast_message("storage_state", await database.get_storage_statues())
-    let ack_operand = {"location": location};
+    let ack_operand = {"location": location, "action": new_state};
     
     if (location != work_order.location) {
       ack_operand['location_changed'] = true;

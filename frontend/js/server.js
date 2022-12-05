@@ -27,6 +27,8 @@ const state_colours = {
   "awaiting_parts": "btn-danger"
 }
 
+let last_scan = null;
+
 const slice_array = (arr, chunkSize) => {
   // Derived from https://stackabuse.com/how-to-split-an-array-into-even-chunks-in-javascript/
   let res = [];
@@ -410,6 +412,9 @@ const asset_location_modal = new AssetLocationModal();
 const daily_report_modal = new DailyReportModal();
 
 const main = async () => {
+  // Setup audio
+  const audio_success = new Audio("/static/success.mp3");
+  const audio_yass = new Audio("/static/yass.mp3");
 
   const status_text = document.getElementById("scan-status");
 
@@ -471,6 +476,7 @@ const main = async () => {
     console.log("Scan data:", data);
     error_modal.hide();
     loading_modal.hide();
+    last_scan = new Date();
 
     scan_modal.show(data);
   })
@@ -504,6 +510,13 @@ const main = async () => {
       // Very temporary fix for a race condition
       await action_modal.hide();
     }, 300)
+
+    // Play correct audio for action
+    if (data['action']['name'] == "complete") {
+      audio_yass.play();
+    } else {
+      audio_success.play();
+    }
 
     if (!data['location_info_required']) return;
 
@@ -665,8 +678,10 @@ const main = async () => {
 
   // Update sys-time every second
   setInterval(async () => {
-    const dom = document.getElementById("sys-time");
-    dom.innerHTML = moment().format("DD/MM/YY | HH:mm:ss");
+    const time_dom = document.getElementById("sys-time");
+    const last_scan_dom = document.getElementById("last-scan-time");
+    time_dom.innerHTML = moment().format("DD/MM/YY | HH:mm:ss");
+    if (last_scan) last_scan_dom.innerHTML = `Last Scan: ${moment(last_scan).fromNow()}`;
   }
   , 1000);
 }
