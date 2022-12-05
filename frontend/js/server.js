@@ -302,13 +302,13 @@ const request_refresh = async () => {
 }
 
 const gen_wo_notes = (notes) => {
-  let html = "<div class='row'>";
+  let html = "<div class='row g-2 pt-2'>";
   for (let note of notes) {
     const date = new Date(note.timestamp);
     html += `<div class="col-6">
       <div class="card">
-        <div class="card-body bg-secondary text-light">
-          <h5 class="card-title">${note.author} - ${date.toLocaleDateString()} ${date.toLocaleTimeString()}</h5>
+        <div class="card-body bg-dark text-light">
+          <h5 class="card-title">${note.author} - ${date.toLocaleDateString()} ${date.toLocaleTimeString()} <h6 class='text-muted'>(${moment(date).fromNow()})</h6></h5>
           <p class="card-text">${note.content}</p>
         </div>
       </div>
