@@ -307,7 +307,7 @@ const gen_action_buttons = (woid, actions) => {
 
     html += "<div class='col'>"
     html += '<div class="btn-group" style="width:100%">'
-    html += `<button type="button" onclick="perform_action('${action['pcrt_scan_state']['name']}', ${woid}); return true;" class="btn btn-block ${colour}"><i class="${icon}"></i> ${name}<br><br><img width="60px" src="/nyi.png"></button>`
+    html += `<button type="button" onclick="perform_action('${action['pcrt_scan_state']['name']}', ${woid}); return true;" class="btn btn-block ${colour}"><i class="${icon}"></i> ${name}</button>`
     html += "</div></div>"
   }
 
