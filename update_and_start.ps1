@@ -2,7 +2,7 @@ Write-Host "Fetching Git Tree..."
 git pull 
 
 Write-Host "Launch browser"
-Start-Process -WindowStyle Maximized powershell -ArgumentList '-noexit -command "C:\Program` Files\Google\Chrome\Application\chrome.exe http://localhost --kiosk"'
+Start-Process -WindowStyle Maximized powershell -ArgumentList '-noexit -command "C:\Program` Files\Google\Chrome\Application\chrome.exe http://localhost --kiosk --disable-application-cache "'
 
 Write-Host "Start Servers..."
 $pwd = Get-Location
