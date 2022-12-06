@@ -1,0 +1,22 @@
+version: '3.8'
+
+volumes:
+  internal_databases:
+    driver: local
+
+services:
+  server:
+    build: ./server
+    ports:
+      - 3000:3000
+      - 3500:3500
+    volumes:
+      - internal_databases:/app/databases/
+      - ./server/config.yaml:/app/config.yaml
+    environment:
+      - "LOG_LEVEL=info"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - 80:80

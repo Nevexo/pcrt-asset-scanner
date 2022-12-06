@@ -9,9 +9,11 @@
   "author": "Cameron Fleming <cameron@triarom.co.uk>",
   "license": "MIT",
   "dependencies": {
+    "cron": "^2.1.0",
     "mysql": "^2.18.1",
     "promise-mysql": "^5.2.0",
     "socket.io": "^4.5.1",
+    "sqlite3": "^5.1.2",
     "winston": "^3.8.1",
     "yaml": "^2.1.1"
   }
