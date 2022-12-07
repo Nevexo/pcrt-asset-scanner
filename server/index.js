@@ -153,6 +153,7 @@ const main = async () => {
 
   // Handle any other barcode entering the system from a scanner agent.
   scanner.emitter.on('barcode', async (code) => {
+    await client.broadcast_message("busy", "fetching");
     let wo = await database.get_work_order(code).catch(error => {
       logger.error(error)
       logger.warn("Unknown barcode: " + code)
@@ -317,6 +318,7 @@ const main = async () => {
 
   client.emitter.on("refresh_storage", async (client_instance) => {
     // Client requested a refresh of the storage view.
+    await client.broadcast_message("busy", "fetching");
     await client_instance.emit("storage_state", await database.get_storage_statues())
   })
 
@@ -394,6 +396,7 @@ const main = async () => {
   })
 
   client.emitter.on("apply_action", async (data) => {
+    await client.broadcast_message("busy", "applying_action");
     const calling_client = data['client'];
     const action_request = data['data'];
     const woid = action_request['work_order'];
@@ -451,6 +454,8 @@ const main = async () => {
       return;
     }
 
+    await client.broadcast_message("busy", "new_location");
+    
     // Check storage location if this state requires storage.
     let location = work_order.location;
     if (location) logger.debug(`current location: ${location.name}`);
@@ -540,6 +545,7 @@ const main = async () => {
       }
     }
     
+    await client.broadcast_message("busy", "updating_pcrt");
 
     // PCRT state has been resolved to a work order, the change can be applied to the database.
     const result = await database.set_work_order_state(woid, pcrt_state, new_state);

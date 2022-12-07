@@ -27,6 +27,10 @@ const state_colours = {
   "awaiting_parts": "btn-danger"
 }
 
+const audio_success = new Audio("/static/success.mp3");
+const audio_yass = new Audio("/static/yass.mp3");
+const audio_error = new Audio("/static/error.mp3");
+
 let last_scan = null;
 
 const slice_array = (arr, chunkSize) => {
@@ -65,14 +69,31 @@ class LoadingModal {
     this.message_box = document.getElementById("loading-modal-text");
     this.message_box.innerText = this.message;
     this.modal = new bootstrap.Modal("#loading-modal");
+    this.visible = false;
   }
 
   async show(message = "Twiddling thumbs..") {
     this.message_box.innerText = message;
     await this.modal.show({'backdrop': 'static', 'keyboard': false})
+    this.visible = true;
   };
 
-  async hide() {await this.modal.hide()};
+  async update(message) {
+    // Replace text in the loading modal.
+    if (!this.visible) {
+      this.show(message) 
+    } else {
+      this.message_box.innerText = message;
+    };
+  }
+
+  async hide() {
+    // Incredibly temporary fix for race condition hiding this modal.
+    setTimeout(async () => {
+      await this.modal.hide()
+      this.visible = false;
+    }, 500)
+  };
 }
 
 class InfoModal {
@@ -322,6 +343,8 @@ const request_refresh = async () => {
 }
 
 const gen_wo_notes = (notes) => {
+  if (notes.length == 0) return "No Engineering Notes Logged";
+
   let html = "<div class='row g-2 pt-2'>";
   for (let note of notes) {
     const date = new Date(note.timestamp);
@@ -379,6 +402,7 @@ const lockout_release = async (lockout_id) => {
   await toast.show("Releasing Lockout", `Releasing lockout ${lockout_id}`, lockout_id);
   view_lockout_modal.hide();
   socket.emit("clear_lockout", {"id": lockout_id});
+  audio_success.play();
 }
 
 const hide_clashes = async () => {
@@ -400,6 +424,9 @@ const show_clashes = async (location_name, work_orders) => {
       text += `lockout (${wo.payload.id}) `
     } else continue; 
   }
+
+  error_modal.show("bi bi-exclamation-circle-fill", "Storage Clash Detected", `Storage bay <b>${location_name}</b> has two work orders/lockouts. Resolve this immediately!`)
+  audio_error.play();
 
   alert_text.innerText = text + " RESOLVE ASAP!";
   alert_box.style.display = "block";
@@ -432,11 +459,7 @@ const asset_location_modal = new AssetLocationModal();
 const daily_report_modal = new DailyReportModal();
 const welcome_modal = new WelcomeModal();
 
-const main = async () => {
-  // Setup audio
-  const audio_success = new Audio("/static/success.mp3");
-  const audio_yass = new Audio("/static/yass.mp3");
-
+const main = async () => {  
   const status_text = document.getElementById("scan-status");
 
   socket = await io(config.server);
@@ -458,6 +481,7 @@ const main = async () => {
     // Confirm API version
     if (data.api_version != config.api_vers) {
       info.show("API Version Mismatch", "The server is running an incompatible API version. Please update your client.");
+      audio_error.play();
     }
 
     // Check scanner status
@@ -482,6 +506,7 @@ const main = async () => {
     document.getElementById("grid").innerHTML = "";
 
     document.getElementById("grid-data-pending").style.display = "block";
+    audio_error.play();
   })
 
   socket.on('scanner_status', async (status) => {
@@ -491,8 +516,10 @@ const main = async () => {
       error_modal.show("bi bi-upc-scan", "Scanner Disconnected", "Please check the services and USB cables to ensure the scanner is connected.")
       status_text.innerText = "Not Ready";
       status_text.className = "text-danger";
+      audio_error.play();
     } else if (status.status == "connected") {
       error_modal.hide();
+      audio_success.play();
       if (status.type) {
         status_text.innerText = `Ready to Scan - ${status.type} (v ${status.version})`;
       } else {
@@ -500,9 +527,9 @@ const main = async () => {
       }
       status_text.className = "text-success";
     } else if (status.status == "faulted") {
-        status_text.innerText = "Not Ready - FAULTED!";
-        status_text.className = "text-warning";
-        error_modal.show("bi bi-upc-scan", "Scanner Faulted!", status.message)
+      status_text.innerText = "Not Ready - FAULTED!";
+      status_text.className = "text-warning";
+      error_modal.show("bi bi-upc-scan", "Scanner Faulted!", status.message)
     }
   })
 
@@ -699,10 +726,32 @@ const main = async () => {
     scan_modal.hide();
 
     error_modal.show("bi bi-exclamation-triangle-fill", error.error, error.message);
+    audio_error.play();
   })
 
   socket.on('info', async (info) => {
     await toast.show("Server Info", info.message, info.type);
+  })
+
+  socket.on('busy', async (message) => {
+    // Server is busy performing a task, show the loading modal.
+    switch (message) {
+      case "fetching":
+        loading_modal.update("Fetching Data");
+        break;
+      case "applying_action":
+        loading_modal.update("Applying Changes");
+        break;
+      case "new_location":
+        loading_modal.update("Choosing a new Location");
+        break;
+      case "updating_pcrt":
+        loading_modal.update("Saving Changes");
+        break;
+      default:
+        loading_modal.update("Processing");
+        break;
+    }
   })
 
   // Send refresh message to server every 5 minutes
