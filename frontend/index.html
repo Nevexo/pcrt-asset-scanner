@@ -249,6 +249,122 @@
     </div>
   </div>
 
+  <!-- Repair Report -->
+  <div class="modal fade" id="repair-report-modal" tabindex="-1" role="dialog" aria-labelledby="repair-report-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen" role="document">
+      <div class="modal-content bg-black text-light">
+        <div class="modal-header bg-primary">
+          <h5 class="modal-title text-white">PCRT-Scan Integrated Repair Report</h5>
+        </div>
+        <div class="modal-body" id="scan-modal-body">
+          <div class="container container-fluid">
+            <div class="row gy-12 mt-2">
+              <div class="col col-6">
+                <div class="alert alert-success" role="alert">
+                  This asset is ready to collect!
+                </div>      
+              </div>
+              <div class="col col-6">
+                <div class="alert alert-danger" role="alert">
+                  Check for USB dongles, CDs and other accessories before returning this asset.
+                </div>
+              </div>
+            </div>
+
+            <div class="row gy-12 mt-2">
+              <div class="col col-9">
+                <div class="card bg-dark text-light">
+                  <div class="card-body">
+                    <div class="d-grid gap-2">
+                      <button class="btn btn-primary" id="repair-report-collected-btn" type="button">Mark as Collected</button>
+                      <button class="btn btn-outline-danger" data-bs-dismiss="modal" type="button">Cancel</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="card bg-dark text-light">
+                  <div class="card-header">
+                    <i class="bi bi-exclamation-circle-fill"></i> Task Description
+                  </div>
+                  <div class="card-body">
+                    <p class="card-text" id="repair-report-description">No information - the lookup has probably failed.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col col-3">
+                <div class="card bg-dark text-light">
+                  <div class="card-header">
+                    <i class="bi bi-person-fill"></i> Customer Information
+                  </div>
+                  <div class="card-body">
+                    <h3 id="repair-report-customer-name">Customer Name</h3>
+                    <h6 class="text-muted" id="repair-report-woid">Work Order Number</h6>
+                    <hr>
+                    <p id="repair-report-device"></p>
+                    <p id="repair-report-arrival">No Arrival Date Available</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row gy-12 mt-2">
+              <div class="col col-9">
+                <div class="card bg-dark text-light">
+                  <div class="card-header">
+                    <i class="bi bi-tools"></i> Parts & Labour
+                  </div>
+                  <div class="card-body">
+                    <ul class="list-group bg-dark text-light" id="repair-report-labour">
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="col col-3">
+                <div class="card bg-success text-light">
+                  <div class="card-header">
+                    <i class="bi bi-currency-dollar"></i> Total Repair Cost
+                  </div>
+                  <div class="card-body text-center">
+                    <h2 id="repair-report-cost"></h2>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row gy-12 mt-2">
+              <div class="col col-6">
+                <div class="card bg-dark text-light">
+                  <div class="card-header bg-info text-dark">
+                    <i class="bi bi-journal-bookmark-fill"></i> Customer Notes
+                  </div>
+                  <div class="card-body">
+                    <ul class="list-group bg-dark text-light" id="repair-report-customer-notes">
+                      
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="col col-6">
+                <div class="card bg-dark text-light">
+                  <div class="card-header bg-warning text-black">
+                    <i class="bi bi-journal-bookmark-fill"></i> Internal Notes
+                  </div>
+                  <div class="card-body">
+                    <ul class="list-group bg-dark text-light" id="repair-report-internal-notes">
+                      
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal fade modal-xl" id="welcome-modal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content bg-dark text-light">
@@ -267,6 +383,16 @@
           <hr>
           <h3>Lastest Updates</h3>
           <div class="container">
+            <!-- Updates 07/12/22 -->
+            <div class="row">
+              <div class="col g-2 pt-2">
+                <div class="card card-body bg-dark text-light">
+                  <h5 class="card-title">Integrated Repair Report</h5>
+                  <h6 class="card-subtitle mb-2 text-muted">Released 07/12/22</h6>
+                  <p class="card-text">PCRT-Scan Bootstrap Frontend now displays a built-in repair report when a completed asset is scanned.</p>
+                </div>
+              </div>
+            </div>
             <!-- Updates 05/12/22 -->
             <div class="row">
               <div class="col g-2 pt-2">

@@ -63,6 +63,20 @@ class WelcomeModal {
   }
 }
 
+class RepairReportModal {
+  constructor() {
+    this.modal = new bootstrap.Modal("#repair-report-modal")
+  }
+
+  async show() {
+    this.modal.show();
+  }
+
+  async hide() {
+    this.modal.hide();
+  }
+}
+
 class LoadingModal {
   constructor() {
     this.message = "Thinking about it...";
@@ -360,6 +374,79 @@ const gen_wo_notes = (notes) => {
   return html += "</div>";
 }
 
+const set_repair_report_modal_data = (work_order, completed_action_id) => {
+  const button = document.getElementById("repair-report-collected-btn");
+  const description = document.getElementById("repair-report-description");
+  const customer_name = document.getElementById("repair-report-customer-name");
+  const woid = document.getElementById("repair-report-woid");
+  const device = document.getElementById("repair-report-device");
+  const arrival = document.getElementById("repair-report-arrival");
+  const labour = document.getElementById("repair-report-labour");
+  const cost = document.getElementById("repair-report-cost");
+  const customer_notes = document.getElementById("repair-report-customer-notes");
+  const internal_notes = document.getElementById("repair-report-internal-notes");
+
+  button.onclick = () => {perform_action(completed_action_id, work_order.id)}
+  description.innerText = work_order.problem;
+  customer_name.innerText = work_order.customer.name;
+  device.innerHTML = `<i class="bi bi-laptop"></i> Device: <b>${work_order.customer.device}</b>`
+  woid.innerText = work_order.id;
+  arrival.innerHTML = `<i class="bi bi-calendar-check"></i> Arrival Date: <b>${new Date(work_order.open_date).toLocaleDateString()}</b>`
+  cost.innerText = "£" + work_order.tasks.cost || "NO REPORT";
+
+  // Add labour entries to grid
+  labour.innerHTML = "";
+  for (let entry of work_order.tasks.tasks) {
+    labour.innerHTML += `
+      <li class="list-group-item bg-dark text-light">
+      <div class="row">
+        <div class="col col-9">
+          <p class="card-text">${entry.name}</p>
+        </div>
+        <div class="col col-3">
+          <p class="card-text text-end"><b>£${entry.cost}</b></p>
+        </div>
+      </div>
+    </li>`;
+  }
+
+  // Add customer notes
+  customer_notes.innerHTML = "";
+  if (work_order.notes) {
+    for (let note of work_order.notes) {
+      customer_notes.innerHTML += `
+        <li class="list-group-item bg-dark text-light">
+        <div class="row">
+          <div class="col col-9">
+            <p class="card-text">${note.content}</p>
+          </div>
+          <div class="col col-3">
+            <p class="card-text text-end"><b><i class="bi bi-person-fill"></i> ${note.author}</b></p>
+          </div>
+        </div>
+      </li>`
+    }
+  }
+
+  // Add internal notes
+  internal_notes.innerHTML = "";
+  if (work_order.internal_notes) {
+    for (let note of work_order.internal_notes) {
+      internal_notes.innerHTML += `
+        <li class="list-group-item bg-dark text-light">
+        <div class="row">
+          <div class="col col-9">
+            <p class="card-text">${note.content}</p>
+          </div>
+          <div class="col col-3">
+            <p class="card-text text-end"><b><i class="bi bi-person-fill"></i> ${note.author}</b></p>
+          </div>
+        </div>
+      </li>`
+    }
+  }
+}
+
 const gen_action_buttons = (woid, actions) => {
   // Generate buttons 
   let html = "<div class='row'>";
@@ -437,6 +524,7 @@ const action_modal = new LoadingModal();
 const perform_action = async (action_id, woid) => {
   const toast = new ToastAlert();
   console.log(`perform action ${action_id} on w/o ${woid}`)
+  repair_report_modal.hide();
   scan_modal.hide();
   
   await toast.show("Performing action", `Applying ${action_id} on work order ${woid}`, woid);
@@ -458,6 +546,7 @@ const view_lockout_modal = new LockoutViewModal();
 const asset_location_modal = new AssetLocationModal();
 const daily_report_modal = new DailyReportModal();
 const welcome_modal = new WelcomeModal();
+const repair_report_modal = new RepairReportModal();
 
 const main = async () => {  
   const status_text = document.getElementById("scan-status");
@@ -538,6 +627,13 @@ const main = async () => {
     error_modal.hide();
     loading_modal.hide();
     last_scan = new Date();
+
+    if (data.work_order.status.pcrt_scan_state.name == "complete") {
+      // Work order is marked complete, show the repair report
+      set_repair_report_modal_data(data.work_order, "collected");
+      repair_report_modal.show();
+      return;
+    }
 
     scan_modal.show(data);
   })
