@@ -128,8 +128,9 @@ class Database {
     const states = await this.get_asset_states();
     const locations = await this.get_storage_locations()
 
-    // TODO: Refactor this, requesting notes should not be done here.
+    // TODO: Refactor this, requesting notes and labour should not be done here.
     const notes = await this.get_public_notes(wo.woid);
+    const labour = await this.get_job_labour(wo.woid);
 
     let work_order = {"type": "work_order", "payload":
     {
@@ -140,6 +141,7 @@ class Database {
       "open_date": new Date(wo.dropdate).toISOString(),
       "location": locations[wo.slid] || undefined,
       "notes": notes || [],
+      "tasks": labour || undefined,
     }}
     return work_order
   }
@@ -385,6 +387,34 @@ class Database {
     }
 
     return notes.reverse();
+  }
+
+  async get_job_labour(woid) {
+    // Get the labour costs for a job
+    // Automatically includes the VAT. TODO: Possibly make this configurable.
+    this.logger.debug(`getting labour costs for ${woid}`)
+
+    let labour = {
+      "cost": 0,
+      "tasks": []
+    }
+
+    const result = await this.connection.query(`SELECT * FROM repaircart WHERE pcwo = ${mysql.escape(woid)}`);
+    if (result.length == 0) return false;
+
+    for (let task in result) {
+      task = result[task];
+      const cost = task['unit_price'] + task['itemtax'];
+      labour.cost += cost;
+      labour.tasks.push({
+        "name": task.labor_desc,
+        "cost": cost
+      });
+      
+      this.logger.debug(`added ${task.labor_desc} at £${cost} to ${woid} task.`);
+    }
+
+    return labour;
   }
 }
 
