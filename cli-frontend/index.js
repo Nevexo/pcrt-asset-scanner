@@ -1,4 +1,5 @@
 const io = require('socket.io-client');
+const util = require('util');
 
 const main = async () => {
   const socket = await io("http://localhost:3500");
@@ -14,11 +15,12 @@ const main = async () => {
 
   socket.on('scan', (scan_data) => {
     console.log("---- SCAN DATA ----")
-    console.log("WORK ORDER")
-    console.dir(scan_data.work_order)
-    console.log("PROCEEDE OPTIONS")
-    console.dir(scan_data.options)
+    console.log(util.inspect(scan_data, {showHidden: false, depth: null, colors: true}))
     console.log("--------------------")
+  })
+
+  socket.on('busy', (message) => {
+    console.log(`BUSY MESSAGE: ${message}`)
   })
 
   socket.on('server_error', (error) => {
