@@ -565,7 +565,6 @@ const main = async () => {
 
     document.getElementById("navbar").style.display = "block";
     document.getElementById("bay-legend").style.display = "block";
-    document.getElementById("xmas-lights").style.display = "block";
 
     // Confirm API version
     if (data.api_version != config.api_vers) {
@@ -591,7 +590,6 @@ const main = async () => {
 
     document.getElementById("navbar").style.display = "none";
     document.getElementById("bay-legend").style.display = "none";
-    document.getElementById("xmas-lights").style.display = "none";
     document.getElementById("grid").innerHTML = "";
 
     document.getElementById("grid-data-pending").style.display = "block";
@@ -669,11 +667,7 @@ const main = async () => {
     }, 300)
 
     // Play correct audio for action
-    if (data['action']['name'] == "complete") {
-      audio_yass.play();
-    } else {
-      audio_success.play();
-    }
+    audio_success.play();
 
     if (!data['location_info_required']) return;
 
