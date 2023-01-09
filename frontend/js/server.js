@@ -592,14 +592,17 @@ const main = async () => {
     await loading_modal.hide();
     toast.show("Server Hello", "Got hello from server!", "Just Now");
 
-    document.getElementById("navbar").style.display = "block";
-    document.getElementById("bay-legend").style.display = "block";
-
     // Confirm API version
     if (data.api_version != config.api_vers) {
-      info.show("API Version Mismatch", "The server is running an incompatible API version. Please update your client.");
+      error_modal.show("bi bi-exclamation-circle-fill", "API Version Mismatch", 
+      `The server is running an incompatible API version. Please upgrade/refresh this client, or the server. Expected API: ${config.api_vers}, got: ${data.api_version}`)
       audio_error.play();
+      socket.close();
+      return;
     }
+
+    document.getElementById("navbar").style.display = "block";
+    document.getElementById("bay-legend").style.display = "block";
 
     // Check scanner status
     if (!data.scanner_ready) {
