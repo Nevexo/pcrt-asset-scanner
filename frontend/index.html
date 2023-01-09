@@ -122,6 +122,9 @@
           <p id="asset-location-modal-text"></p>
         </div>
         <div class="modal-footer">
+          <div class="alert alert-primary" role="alert">
+            <i class="bi bi-lightbulb"></i> Bay LED will stop blinking when this modal is closed
+          </div>
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
@@ -380,6 +383,19 @@
           <hr>
           <h3>Lastest Updates</h3>
           <div class="container">
+            <!-- Updates 09/01/23 -->
+            <div class="row">
+              <div class="col g-2 pt-2">
+                <div class="card card-body">
+                  <h5 class="card-title">API v3, BayLED.</h5>
+                  <h6 class="card-subtitle mb-2 text-muted">Released 09/01/23</h6>
+                  <p class="card-text">
+                    PCRT-Scan's first verison for 2023 introduced Socket API v3, which adds the <code>frontend_ack</code> opcode, allowing frontends to acknowledge
+                    modals/interactions on other frontends in preparation for BayLED.
+                  </p>
+                </div>
+              </div>
+            </div>
             <!-- Updates 30/12/22 -->
             <div class="row">
               <div class="col g-2 pt-2">
@@ -490,6 +506,11 @@
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <div class="d-flex">
             <button class="btn btn-outline-primary" type="button" onclick="request_daily_report(); return true;">Daily Report</button>
+          </div>
+        </ul>
+        <ul>
+          <div class="d-flex">
+            <h5 class="text-secondary text-muted" id="client-id-text"></h5>
           </div>
         </ul>
         <ul>
