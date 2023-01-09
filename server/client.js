@@ -28,19 +28,25 @@ class Client {
     // Handle socket.io connection
     io.on('connection', (socket) => {
       this.handle_connection(socket);
+      this.broadcast_message("client_connected", {
+        "client_id": socket.id
+      });
     });
   }
 
   async handle_connection(client) {
-    this.logger.info("New frontend client has connected.")
+    this.logger.info(`New frontend connection: ${client.id}`);
     this.emitter.emit("client_connected", client);
 
     client.onAny((message, data) => {
-      this.logger.debug("[incoming] cmd: " + message + " data: " + JSON.stringify(data));
+      this.logger.debug(`[frontend msg] ${client.id}: ${message} - data: ${JSON.stringify(data)}`)
     })
 
     client.on('disconnect', () => {
-      this.logger.info("Frontend client has disconnected")
+      this.logger.info(`Frontend ${client.id} disconected.`)
+      this.broadcast_message("client_disconnected", {
+        "client_id": client.id
+      })
       this.emitter.emit("client_disconnected");
     })
 
@@ -98,6 +104,32 @@ class Client {
         "client": client,
         "data": data
       })
+    })
+
+    // API v3 - frontend-based acks
+    client.on("frontend_ack", async (data) => {
+      // This event expects a "type" defintion in order to emit the correct response.
+      this.logger.debug("Processing frontend ack");
+      if (!data.type) {
+        this.logger.warn("frontend_ack received without type definition");
+        return;
+      }
+
+      data.client_id = client.id;
+
+      switch(data.type) {
+        case "location_change_ack":
+          // A location change notice has been acknolodged by the frontend, this is primarily used by BayLED to clear the fastflash LED.
+          this.emitter.emit("location_change_ack", data);
+          break;
+        case "frontend_modal_close":
+          // A modal has been dismissed for any reason.
+          this.emitter.emit("frontend_modal_close", data);
+          break;
+        default:
+          this.logger.warn(`Unexpected frontend_ack with ack type ${data.type}`);
+          return;
+      }
     })
   }
 

@@ -305,12 +305,15 @@ const main = async () => {
   // TODO: This really needs tidying up into its own module.
   client.emitter.on('client_connected', async (client) => {
     await client.emit("hello", {
-      "api_version": 2, 
+      "api_version": 3, 
       "api_name": "pcrt_scanner",
       "connect_time": new Date().toISOString(),
       "scanner_ready": scanner.scanner_connected,
       "scan_count": await transaction.scan_odometer() || undefined,
+      "client_id": client.id
     });
+
+    await client.emit("busy", "Initalising!");
 
     // Send the client the current storage state.
     await client.emit("storage_state", await database.get_storage_statues());
@@ -319,7 +322,8 @@ const main = async () => {
   client.emitter.on("refresh_storage", async (client_instance) => {
     // Client requested a refresh of the storage view.
     await client.broadcast_message("busy", "fetching");
-    await client_instance.emit("storage_state", await database.get_storage_statues())
+    // await client_instance.emit("storage_state", await database.get_storage_statues())
+    await client.broadcast_message("storage_state", await database.get_storage_statues())
   })
 
   // Handle request for lockout info
@@ -364,7 +368,7 @@ const main = async () => {
     }
 
     await lockout.create_lockout(data.data.slid, data.data.engineer);
-    await data.client.emit("storage_state", await database.get_storage_statues())
+    await client.broadcast_message("storage_state", await database.get_storage_statues())
     await transaction.log_transaction("lockout_change", {"slid": data.data.slid, "engineer": data.data.engineer, "action": "create"});
   });
 
@@ -375,7 +379,7 @@ const main = async () => {
     const id = data.data.id;
 
     await lockout.clear_lockout(id);
-    await data.client.emit("storage_state", await database.get_storage_statues())
+    await client.broadcast_message("storage_state", await database.get_storage_statues())
     await transaction.log_transaction("lockout_change", {"slid": data.data.slid, "engineer": data.data.engineer, "action": "clear"});
   });
 
@@ -577,7 +581,7 @@ const main = async () => {
       ack_operand['location_info_required'] = true;
     }
     
-    if (state_extra_alert && !ack_operand['location_inf0_required']) {
+    if (state_extra_alert && !ack_operand['location_info_required']) {
       // Trigger an extra modal with a warning message present.
       ack_operand['alert'] = state_extra_alert;
     }
@@ -589,6 +593,16 @@ const main = async () => {
     await transaction.log_transaction("action_applied", {woid: woid, action: action_id, location: location.name || null, new_state_alias: new_state['alias']});
   })
 
+  // Handle frontend_ack for location change ack
+  client.emitter.on("location_change_ack", async (data) => {
+    client.broadcast_message("ack_action", "ack_elsewhere");
+  })
+
+  client.emitter.on("frontend_modal_close", async (data) => {
+    // Handle this the same as location_change_ack, this is for future-proofing.
+    client.broadcast_message("ack_action", "ack_elsewhere");
+  })
+
   // If execution reaches this far, we can safely assume the server is up and running.
   logger.info("PCRT Scanner Server started")
   logger.info(`Listening for scanner agents on port ${config.ports.scanner_socket}`)
@@ -596,4 +610,5 @@ const main = async () => {
 }
 
 // Invoke async entrypoint
+console.log("Showtime!")
 main();
