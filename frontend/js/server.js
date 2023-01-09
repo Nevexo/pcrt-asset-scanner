@@ -5,7 +5,7 @@ let socket;
 
 const config = {
   "server": "http://localhost:3500",
-  "api_vers": 2
+  "api_vers": 3.0,
 }
 
 const state_icons = {
