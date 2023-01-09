@@ -65,6 +65,7 @@ class WelcomeModal {
 
 class RepairReportModal {
   constructor() {
+    this.modalDiv = document.getElementById("repair-report-modal");
     this.modal = new bootstrap.Modal("#repair-report-modal")
   }
 
@@ -138,6 +139,7 @@ class AssetLocationModal {
     this.status = document.getElementById("asset-location-modal-status");
     this.bay = document.getElementById("asset-location-modal-bay");
     this.text = document.getElementById("asset-location-modal-text");
+    this.modalDiv = document.getElementById("asset-location-modal");
     this.modal = new bootstrap.Modal("#asset-location-modal");
     this.visible = false;
   }
@@ -306,6 +308,7 @@ class ScanModal {
       "check_in_date": document.getElementById("scan-modal-check-in-date"),
     }
     this.buttons = document.getElementById("scan-modal-actions");
+    this.modalDiv = document.getElementById("scan-modal");
     this.modal = new bootstrap.Modal("#scan-modal");
     this.notes = document.getElementById("scan-modal-notes");
     this.visible = false;
@@ -553,10 +556,36 @@ const main = async () => {
 
   socket = await io(config.server);
 
+  document.body.addEventListener("hidden.bs.modal", async (modal) => {
+    // Capture all modal closes, and broadcast "frontend_modal_close" frontend_ack.
+    
+    // Only handle "interactive" modals, check the modal ID is in the following array.
+    const monitored_modals = [
+      "scan-modal",
+      "asset-location-modal",
+      "repair-report-modal"
+    ]
+
+    if (!monitored_modals.includes(modal.target.id)) return;
+
+    socket.emit("frontend_ack", {
+      "type": "frontend_modal_close",
+      "modal": modal.target.id
+    })
+  })
+
   socket.on('connect', async () => {
     console.log('Connected to server!');
     toast.show("Connected", "Connected to PCRT-Scan backend", "Just Now");
     await loading_modal.hide();
+  })
+
+  socket.on('client_connected', async (data) => {
+    toast.show("New Client", `${data.client_id} has connected.`, "Just Now");
+  })
+
+  socket.on('client_disconnected', async () => {
+    toast.show("Client Disconnected", `${data.client_id} has disconnected.`, "Just Now");
   })
 
   socket.on('hello', async (data) => {
@@ -579,6 +608,9 @@ const main = async () => {
       status_text.innerText = "Ready to Scan";
       status_text.className = "text-success";
     }
+
+    // Set client ID text
+    document.getElementById("client-id-text").innerText = data.client_id || "";
 
     welcome_modal.show(data['api_version'], data['scan_count'] || undefined);
   });
@@ -659,6 +691,19 @@ const main = async () => {
     if (data['alert'] != undefined) {
       await info.show("System Alert", data['alert']);
     } 
+
+    if (data == "ack_elsewhere") {
+      // Hide any user-interaction modals if the action was acknolodged elsewhere, i.e., by aonther frontend.
+      setTimeout(async () => {
+        await action_modal.hide();
+        await asset_location_modal.hide();
+        await repair_report_modal.hide();
+        await scan_modal.hide();
+      }, 300)
+
+      // No further processing is necessary.
+      return;
+    }
 
     // Don't continue if the location info modal isn't required.
     setTimeout(async () => {
