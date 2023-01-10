@@ -6,7 +6,7 @@ const col_div_html = '<div class="col">'
 const gen_grid = (entries) => {
   // Entries is expected to be a 2D array of rows/cols to be displayed
   let html = ""
-  
+
   for (let row in entries) {
     // Create a new row in the table
     row = entries[row]
@@ -22,7 +22,7 @@ const gen_grid = (entries) => {
       let sub_text_style = "text-muted";
       let title_text_style = "";
       let bi_icon = "bi-app"
-      
+
       if (col['status'] == "lockout") {
         style = "card-body bg-dark";
         sub_text_style = "text-white";
@@ -42,7 +42,7 @@ const gen_grid = (entries) => {
         sub_text_style = "text-light";
         title_text_style = "text-white";
         bi_icon = "bi-tools"
-      } 
+      }
 
       if (col['status'] == "bench") {
         style = "card-body bg-secondary";
@@ -85,8 +85,13 @@ const gen_grid = (entries) => {
       }
       html += `<i class='bi ${bi_icon}'></i> ${col['title']}`;
       html += `</div>`;
-      html += `<div class='card-subtitle mb-2 ${sub_text_style}'>${col['bay_status']}</div>`;
-      html += '</div></div></div></a>' // TODO: Do that better...
+      html += `<div class='card-subtitle mb-2 ${sub_text_style}'>${col['bay_status']}`;
+
+      if (col['bay_status_secondary']) {
+        html += ` <small><span class="badge bg-secondary">${col['bay_status_secondary'].toUpperCase()}</span></small>`;
+      }
+
+      html += '</div></div></div></div></a>' // TODO: Do that better...
     }
 
     html += '</div>'
