@@ -96,7 +96,7 @@ class LoadingModal {
   async update(message) {
     // Replace text in the loading modal.
     if (!this.visible) {
-      this.show(message) 
+      this.show(message)
     } else {
       this.message_box.innerText = message;
     };
@@ -249,7 +249,7 @@ class LockoutCreateModal {
     this.modal = new bootstrap.Modal("#lockout-create-modal");
     this.visible = false;
   }
-  
+
   async show(lockout, bay) {
     this.text.innerHTML = `No lockouts have been assigned to ${bay}. Only create a lockout as a temporary measure, for example, if you are unsure why an asset is in a specific bay. Select your name below to create a lockout.`;
 
@@ -284,7 +284,7 @@ class LockoutViewModal {
     this.modal = new bootstrap.Modal("#lockout-view-modal");
     this.visible = false;
   }
-  
+
   async show(lockout) {
     this.text.innerHTML = `Lockout ${lockout.id} is assigned to ${lockout.engineer} and was created at ${new Date(lockout.timestamp).toLocaleDateString()}.`;
     this.buttons.innerHTML = `<button type="button" class="btn btn-primary" onclick="lockout_release(${lockout.id})">Release Lockout</button>`;
@@ -451,7 +451,7 @@ const set_repair_report_modal_data = (work_order, completed_action_id) => {
 }
 
 const gen_action_buttons = (woid, actions) => {
-  // Generate buttons 
+  // Generate buttons
   let html = "<div class='row'>";
 
   for (let action in actions) {
@@ -512,7 +512,7 @@ const show_clashes = async (location_name, work_orders) => {
       text += `${wo.payload.customer.name} (${wo.payload.id}) `
     } else if (wo.type == "lockout") {
       text += `lockout (${wo.payload.id}) `
-    } else continue; 
+    } else continue;
   }
 
   error_modal.show("bi bi-exclamation-circle-fill", "Storage Clash Detected", `Storage bay <b>${location_name}</b> has two work orders/lockouts. Resolve this immediately!`)
@@ -529,7 +529,7 @@ const perform_action = async (action_id, woid) => {
   console.log(`perform action ${action_id} on w/o ${woid}`)
   repair_report_modal.hide();
   scan_modal.hide();
-  
+
   await toast.show("Performing action", `Applying ${action_id} on work order ${woid}`, woid);
   action_modal.show("Applying changes");
 
@@ -551,14 +551,14 @@ const daily_report_modal = new DailyReportModal();
 const welcome_modal = new WelcomeModal();
 const repair_report_modal = new RepairReportModal();
 
-const main = async () => {  
+const main = async () => {
   const status_text = document.getElementById("scan-status");
 
   socket = await io(config.server);
 
   document.body.addEventListener("hidden.bs.modal", async (modal) => {
     // Capture all modal closes, and broadcast "frontend_modal_close" frontend_ack.
-    
+
     // Only handle "interactive" modals, check the modal ID is in the following array.
     const monitored_modals = [
       "scan-modal",
@@ -594,7 +594,7 @@ const main = async () => {
 
     // Confirm API version
     if (data.api_version != config.api_vers) {
-      error_modal.show("bi bi-exclamation-circle-fill", "API Version Mismatch", 
+      error_modal.show("bi bi-exclamation-circle-fill", "API Version Mismatch",
       `The server is running an incompatible API version. Please upgrade/refresh this client, or the server. Expected API: ${config.api_vers}, got: ${data.api_version}`)
       audio_error.play();
       socket.close();
@@ -633,7 +633,7 @@ const main = async () => {
 
   socket.on('scanner_status', async (status) => {
     console.log("Scanner status:", status);
-    
+
     if (status.status == "disconnected") {
       error_modal.show("bi bi-upc-scan", "Scanner Disconnected", "Please check the services and USB cables to ensure the scanner is connected.")
       status_text.innerText = "Not Ready";
@@ -693,7 +693,7 @@ const main = async () => {
     // Show alerts if the server sent any.
     if (data['alert'] != undefined) {
       await info.show("System Alert", data['alert']);
-    } 
+    }
 
     if (data == "ack_elsewhere") {
       // Hide any user-interaction modals if the action was acknolodged elsewhere, i.e., by aonther frontend.
@@ -786,17 +786,17 @@ const main = async () => {
             "title": col['name'],
             "slid": col['id']
           }
-          
+
           console.dir(col)
           if (col.hasOwnProperty('work_order')) {
             if (col['work_order']['type'] == "work_order") {
               col['work_order'] = col['work_order']['payload'] // Extract payload from work_order (v2 api compat)
-              const open_date = new Date(col['work_order']['open_date']); 
+              const open_date = new Date(col['work_order']['open_date']);
               entry_col['title'] = `${col['name']} (${col['work_order']['id']}) - ${moment(open_date).fromNow()}`
-              // Bay is in use 
+              // Bay is in use
               console.log(col['work_order']['status']['id'])
               switch(col['work_order']['status']['id']) {
-                case 1: 
+                case 1:
                   // In storage
                   entry_col['status'] = "wip";
                   break;
@@ -821,8 +821,9 @@ const main = async () => {
                   entry_col['status'] = "bench";
                   break;
               }
-  
+
               entry_col['bay_status'] = col['work_order']['customer']['name'];
+              entry_col['bay_status_secondary'] = col['work_order']['customer']['device'] || "";
             } else if (col['work_order']['type'] == "lockout") {
               entry_col['title'] = `${col['name']}`
               entry_col['status'] = "lockout";
