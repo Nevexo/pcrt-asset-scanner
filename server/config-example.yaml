@@ -9,6 +9,17 @@ ports:
   scanner_socket: 3000
   client_socket: 3500
 
+notify:
+  enabled: yes
+  server: http://notify.mysite.net:3000
+  messages:
+    daily_report:
+      carrier: thermalprinter
+      recipient: "PCRT-Scanner"
+    lockout_created:
+      carrier: thermalprinter
+      recipient: "PCRT-Scanner"
+
 # Define the various boxstyles that should be handled by PCRT-Scan here.
 states:
   1: 

@@ -9,6 +9,7 @@ const scan = require("./scanner.js")
 const clients = require("./client.js")
 const lockouts = require("./lockouts.js")
 const transactions = require("./transactions.js")
+const notify_handler = require("./notify.js")
 const cron = require("cron").CronJob;
 
 const child_process = require("child_process");
@@ -45,6 +46,10 @@ const main = async () => {
   }
   logger.debug("configuration loaded")
 
+  // Create Triarom Notify handler
+  logger.debug("starting notify handler")
+  const notify = new notify_handler.Notify(logger, config);
+  
   // Ensure transactions are enabled if daily reports are enabled.
   if (config.daily_report.enable && !config.transaction_logging.enable) {
     logger.error("Daily reports are enabled, but transaction logging is not. Please enable transaction logging to use daily reports.")
@@ -64,7 +69,9 @@ const main = async () => {
     logger.debug("creating daily reports cron job")
     const daily_report_job = new cron(config.daily_report.cron, async () => {
       logger.info("Daily report cron job triggered, generating report.")
-      await client.broadcast_message("daily_report", await transaction.daily_report())
+      const report = await transaction.daily_report()
+      await client.broadcast_message("daily_report", report)
+      await notify.send_msg("daily_report", report)
     }, null, true, "Europe/London");
   }
 
@@ -363,13 +370,14 @@ const main = async () => {
         "error": "lockout_create_failed",
         "message": `Cannot create lockout for ${data.data.slid} - there is a work order in this bay.`
       })
-      
+
       return;
     }
 
     await lockout.create_lockout(data.data.slid, data.data.engineer);
     await client.broadcast_message("storage_state", await database.get_storage_statues())
     await transaction.log_transaction("lockout_change", {"slid": data.data.slid, "engineer": data.data.engineer, "action": "create"});
+    await notify.send_msg("lockout_created", data.data);
   });
 
   client.emitter.on("clear_lockout", async (data) => {
