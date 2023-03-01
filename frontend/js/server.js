@@ -16,6 +16,7 @@ const state_icons = {
   "collected": "bi bi-check-circle-fill",
   "data_transfer": "bi bi-device-hdd-fill",
   "awaiting_parts": "bi bi-tools",
+  "awaiting_parts_customer": "bi bi-tools",
 }
 
 const state_colours = {
@@ -24,8 +25,11 @@ const state_colours = {
   "pending_cust_response": "btn-warning",
   "complete": "btn-success",
   "data_transfer": "btn-warning",
-  "awaiting_parts": "btn-danger"
+  "awaiting_parts": "btn-danger",
+  "awaiting_parts_customer": "btn-danger"
 }
+
+let benches = [];
 
 const audio_success = new Audio("/static/success.mp3");
 const audio_yass = new Audio("/static/yass.mp3");
@@ -155,6 +159,10 @@ class AssetLocationModal {
     } else if (status == "return") {
       this.status.innerText = "RETURN TO",
       this.text.innerText = "This asset already has a bay that is still valid for the action performed, please return it to the bay displayed above."
+    } else if (status == "customer") {
+      this.status.innerText = "RETURN TO",
+      this.bay.innerText = "CUSTOMER"
+      this.text.innerText = "Return this device to the customer, and advise them they will recieve a message when the parts arrive. If you'd like to free the bay, unset it using PCRT."
     } else {
       this.status.innerText = "",
       this.text.innerText = "I'm not really sure what's happened here, take the asset to the bay shown above."
@@ -482,6 +490,11 @@ const prepare_lockout = async (slid) => {
   socket.emit("get_lockout_info", {"slid": slid});
 }
 
+const bay_select = async (slid) => {
+  // Select a bay to view
+  await info.show("Bay Information", "Coming soon.");
+}
+
 const request_daily_report = async () => {
   // Request a new storage status poll
   socket.emit("get_daily_report");
@@ -616,6 +629,9 @@ const main = async () => {
     document.getElementById("client-id-text").innerText = data.client_id || "";
 
     welcome_modal.show(data['api_version'], data['scan_count'] || undefined);
+
+    // Request benches
+    socket.emit("get_benches");
   });
 
   socket.on('disconnect', () => {
@@ -721,7 +737,12 @@ const main = async () => {
 
     if (data['location_changed']) {
       // A new location has been selected, inform the user they must use this location.
-      await asset_location_modal.show("moved", data.location.name)
+      // Check if this state has is_on_site set to false, then display "customer" instead of "moved"
+      if (!data['action'].is_on_site) {
+        await asset_location_modal.show("customer", null)
+      } else {
+        await asset_location_modal.show("moved", data.location.name)
+      }
       //await info.show("Location Chosen Automatically", `Please place this device in <b>${data.location.name}</b> <br><br><i class="bi bi-info-circle-fill"></i> If this bay is not available, please manually update it in PCRT and click refresh on the dashboard.<br><br><i class="bi bi-info-circle-fill"></i> <b>Please Note: </b> If this device has been moved between states, a new location may have been chosen. Please pay attention to this!`);
     } else {
       await asset_location_modal.show("return", data.location.name)
@@ -816,6 +837,10 @@ const main = async () => {
                   // Waiting for parts
                   entry_col['status'] = "parts";
                   break;
+                case 205:
+                  // Waiting for parts - with customer
+                  entry_col['status'] = "parts_customer";
+                  break;
                 default:
                   // Any other system status
                   entry_col['status'] = "bench";
@@ -891,6 +916,10 @@ const main = async () => {
         loading_modal.update("Processing");
         break;
     }
+  })
+
+  socket.on("benches", async (data) => {
+    benches = data;
   })
 
   // Send refresh message to server every 5 minutes

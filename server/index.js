@@ -271,6 +271,29 @@ const main = async () => {
         logger.debug(`[wip -> storage] adding state: ${state.pcrt_scan_state.name}`)
         permissible_states.push(state);
       }
+    } else if (!wo.status.pcrt_scan_state.is_on_site && wo.status.pcrt_scan_state.work_in_progress) {
+      // The device is pending work, but is currently off-site, likely was waiting for parts and has been returend.
+
+      for (let state in states) {
+        state = states[state];
+
+        // Skip any states that PCRT-Scan does not handle
+        if (state.pcrt_scan_state == undefined) continue;
+
+        logger.debug(`[off-site -> on-site (wip)] processing state: ${state.pcrt_scan_state.name} | stored: ${state.pcrt_scan_state.is_stored} | work in progress: ${state.pcrt_scan_state.work_in_progress} | on-site: ${state.pcrt_scan_state.is_on_site}`)
+
+        // Skip any states that are not "work in progress"
+        if (!state.pcrt_scan_state.work_in_progress) continue;
+
+        // Skip any states that are not "stored"
+        // if (!state.pcrt_scan_state.is_stored) continue;
+
+        // Skip any states that are off-site
+        if (!state.pcrt_scan_state.is_on_site) continue;
+
+        logger.debug(`[off-site -> on-site (wip)] adding state: ${state.pcrt_scan_state.name}`);
+        permissible_states.push(state);
+      }
     } else {
       // This should never happen, a likely cause is that a device was taken off-site while waiting for parts.
       // TODO: Handle this nateively.
@@ -581,6 +604,11 @@ const main = async () => {
     let ack_operand = {"location": location, "action": new_state};
     
     if (location != work_order.location) {
+      ack_operand['location_changed'] = true;
+    }
+
+    // If the state has is_on_site set to false, then mark the location as changed.
+    if (!new_state['is_on_site']) {
       ack_operand['location_changed'] = true;
     }
 
