@@ -598,7 +598,7 @@ const main = async () => {
     logger.info(`Performed action ${action_id} on work order ${woid} successfully!`)
 
     // Log transaction
-    await transaction.log_transaction("action_applied", {woid: woid, action: action_id, location: location.name || null, new_state_alias: new_state['alias']});
+    await transaction.log_transaction("action_applied", {woid: woid, action: action_id, new_state_alias: new_state['alias']});
   })
 
   // Handle frontend_ack for location change ack
