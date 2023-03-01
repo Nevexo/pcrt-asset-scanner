@@ -381,6 +381,27 @@ const main = async () => {
     }
   })
 
+  client.emitter.on("get_benches", async (data) => {
+    // The client has requested the list of benches
+    logger.debug(`Client requested list of benches`);
+    const calling_client = data.client;
+
+    await calling_client.emit("benches", await db.get_benches());
+  })
+
+  client.emitter.on("set_wo_bench", async (data) => {
+    // The client has requested to set the bench for a work order
+    logger.debug(`Client requested to set bench for work order ${data.data.work_order} to ${data.data.bench_name}`);
+    const calling_client = data.client;
+
+    await db.set_wo_bench(data.data.work_order, data.data.bench_name);
+    await calling_client.emit("wo_bench_ack", {
+      "work_order": data.data.work_order,
+      "bench_name": data.data.bench_name
+    });
+    await client.broadcast_message("storage_state", await database.get_storage_statues())
+  })
+
   client.emitter.on("lockout_create", async (data) => {
     // The client has requested a new lockout
     logger.debug(`Client requested lockout creation for ${data.data.slid} for engineer: ${data.data.engineer}`);

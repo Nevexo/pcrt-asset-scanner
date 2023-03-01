@@ -141,6 +141,7 @@ class Database {
       "status": states[wo.pcstatus.toString()] || wo.pcstatus || undefined,
       "open_date": new Date(wo.dropdate).toISOString(),
       "location": locations[wo.slid] || undefined,
+      "bench": wo.bench || undefined,
       "notes": notes || [],
       "internal_notes": internal_notes || [],
       "tasks": labour || undefined,
@@ -435,6 +436,31 @@ class Database {
     }
 
     return labour;
+  }
+
+  async get_benches() {
+    // Get a list of benches
+    this.logger.debug(`getting benches`)
+    const result = await this.connection.query(`SELECT * FROM benches`);
+    let benches = [];
+
+    for (let bench in result) {
+      bench = result[bench];
+      benches.push({
+        "id": bench.benchid,
+        "name": bench.benchname,
+        "colour": bench.benchcolor
+      })
+    }
+
+    return benches;
+  }
+
+  async set_work_order_bench(woid, bench_name) {
+    // Set the bench for a work order
+    this.logger.debug(`setting bench for ${woid} to ${bench_name}`)
+    await this.connection.query(`UPDATE pc_wo SET workarea = ${mysql.escape(bench_name)} WHERE woid = ${mysql.escape(woid)}`);
+    return true;
   }
 }
 
