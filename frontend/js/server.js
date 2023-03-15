@@ -37,43 +37,6 @@ const audio_error = new Audio("/static/error.mp3");
 
 let last_scan = null;
 
-// Easter egg (asset photos)
-// This may be developed into a feature.
-
-let ee_photo = null;
-
-const capture_photo = async () => {
-  // Take a photo of the asset and save it to the server.
-  const width = 1280;
-  const height = 720;
-
-  const constraints = {
-    audio: false,
-    video: {
-      width: width,
-      height: height,
-    }
-  };
-
-  const stream = await navigator.mediaDevices.getUserMedia(constraints);
-  const video = document.createElement("video");
-  video.srcObject = stream;
-  await video.play();
-
-  const canvas = document.createElement("canvas");
-  canvas.width = 900;
-  canvas.height = 600;
-
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(video, 0, 0, 900, 600);
-
-  ee_photo = canvas;
-
-  stream.getTracks()[0].stop();
-  delete video;
-  delete stream;
-}
-
 const slice_array = (arr, chunkSize) => {
   // Derived from https://stackabuse.com/how-to-split-an-array-into-even-chunks-in-javascript/
   let res = [];
@@ -192,11 +155,7 @@ class AssetLocationModal {
       this.text.innerText = "This asset has been assigned a new bay that was previously empty. Please take it to this bay now."
     } else if (status == "moved") {
       this.status.innerText = "NEW BAY ASSIGNED",
-      this.text.innerText = "This asset has been moved to a new bay. Please place it in the new bay shown above, including any accessories still left in the original bay.\nUploaded new Asset Photo:\n"
-      if (ee_photo != null) {
-        this.text.appendChild(ee_photo);
-        ee_photo = null;
-      }
+      this.text.innerText = "This asset has been moved to a new bay. Please place it in the new bay shown above, including any accessories still left in the original bay."
     } else if (status == "return") {
       this.status.innerText = "RETURN TO",
       this.text.innerText = "This asset already has a bay that is still valid for the action performed, please return it to the bay displayed above."
@@ -723,12 +682,6 @@ const main = async () => {
       set_repair_report_modal_data(data.work_order, "collected");
       repair_report_modal.show();
       return;
-    }
-
-    try {
-      await capture_photo();
-    } catch (e) {
-      console.error(e)
     }
 
     scan_modal.show(data);
