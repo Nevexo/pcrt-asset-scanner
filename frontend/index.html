@@ -383,6 +383,19 @@
           <hr>
           <h3>Lastest Updates</h3>
           <div class="container">
+          <!-- Updates 27/04/23 -->
+          <div class="row">
+            <div class="col g-2 pt-2">
+              <div class="card card-body">
+                <h5 class="card-title">Peer Review Pending</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Released 27/04/23</h6>
+                <p class="card-text">
+                  This version introduces a new possible state, <code>peer_reivew_pending</code> - this state allows you to mark an open work-order as
+                  needing peer review. This isn't necessary, but a good choice if you're not sure about something, and want someone else to check it over.
+                </p>
+              </div>
+            </div>
+          </div>
           <!-- Updates 01/03/23 -->
           <div class="row">
             <div class="col g-2 pt-2">
@@ -566,7 +579,7 @@
           <i class="bi bi-app"></i> - Bay Available
         </span>
         <span class="navbar-text">
-          <i class="bi bi-app-indicator"></i> - Bay Reserved (on the bench)
+          <i class="bi bi-app-indicator"></i> - Bay Reserved
         </span>
         <span class="navbar-text">
           <i class="bi bi-tools"></i> - Waiting for Bench
@@ -582,6 +595,9 @@
         </span>
         <span class="navbar-text">
           <i class="bi bi-basket-fill"></i> <i class="bi bi-person-fill"></i> - WfP (with Customer)
+        </span>
+        <span class="navbar-text">
+          <i class="bi bi-people-fill"></i> - Peer Review
         </span>
         <span class="navbar-text">
           <button class="btn btn-outline-success me-2" type="button" onclick="request_refresh(); return true;">Refresh</button>

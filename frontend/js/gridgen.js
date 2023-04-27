@@ -81,6 +81,13 @@ const gen_grid = (entries) => {
         bi_icon_secondary = "bi-person-fill"
       }
 
+      if (col['status'] == "peer_review") {
+        style = "card-body bg-danger";
+        sub_text_style = "text-light";
+        title_text_style = "text-white";
+        bi_icon = "bi-people-fill"
+      }
+
       // Check if the bay is available or in lockout, if not, don't allow the user to click it.
       if (col['status'] == "available" || col['status'] == "lockout") {
         html += `<a style='text-decoration: none;' onclick='prepare_lockout("${col['slid']}")'><div class='card'><div class='${style}'>`;

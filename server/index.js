@@ -542,6 +542,8 @@ const main = async () => {
           location = all_locations[location]
 
           logger.debug(`considering ${location.name} (${location.type}) for storage:${state_stored}, wip:${state_wip}`)
+          await client.broadcast_message("busy", `considering_location_${location.name}`);
+
 
           // TODO: Handle this dynamically.
           if (state_wip && location.type != "wip") continue;

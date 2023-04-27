@@ -17,6 +17,7 @@ const state_icons = {
   "data_transfer": "bi bi-device-hdd-fill",
   "awaiting_parts": "bi bi-tools",
   "awaiting_parts_customer": "bi bi-tools",
+  "peer_review_pending": "bi bi-people-fill"
 }
 
 const state_colours = {
@@ -26,7 +27,8 @@ const state_colours = {
   "complete": "btn-success",
   "data_transfer": "btn-warning",
   "awaiting_parts": "btn-danger",
-  "awaiting_parts_customer": "btn-danger"
+  "awaiting_parts_customer": "btn-danger",
+  "peer_review_pending": "btn-danger"
 }
 
 let benches = [];
@@ -93,8 +95,8 @@ class LoadingModal {
 
   async show(message = "Twiddling thumbs..") {
     this.message_box.innerText = message;
-    await this.modal.show({'backdrop': 'static', 'keyboard': false})
     this.visible = true;
+    await this.modal.show({'backdrop': 'static', 'keyboard': false})
   };
 
   async update(message) {
@@ -405,6 +407,7 @@ const set_repair_report_modal_data = (work_order, completed_action_id) => {
   arrival.innerHTML = `<i class="bi bi-calendar-check"></i> Arrival Date: <b>${new Date(work_order.open_date).toLocaleDateString()}</b>`
   cost.innerText = "£" + work_order.tasks.cost || "NO REPORT";
 
+
   // Add labour entries to grid
   labour.innerHTML = "";
   for (let entry of work_order.tasks.tasks) {
@@ -535,7 +538,7 @@ const show_clashes = async (location_name, work_orders) => {
   alert_box.style.display = "block";
 }
 
-const action_modal = new LoadingModal();
+// const action_modal = new LoadingModal();
 
 const perform_action = async (action_id, woid) => {
   const toast = new ToastAlert();
@@ -544,7 +547,7 @@ const perform_action = async (action_id, woid) => {
   scan_modal.hide();
 
   await toast.show("Performing action", `Applying ${action_id} on work order ${woid}`, woid);
-  action_modal.show("Applying changes");
+  // action_modal.show("Applying changes");
 
   socket.emit("apply_action", {
     "action_id": action_id,
@@ -679,6 +682,11 @@ const main = async () => {
 
     if (data.work_order.status.pcrt_scan_state.name == "complete") {
       // Work order is marked complete, show the repair report
+      if (data.work_order.tasks == undefined) {
+        // No tasks, show an error.
+        error_modal.show("bi bi-exclamation-circle-fill", "Repair Report not Complete!", "No repair report has been added to this work order. Please add one before checking devices out.")
+        return;
+      }
       set_repair_report_modal_data(data.work_order, "collected");
       repair_report_modal.show();
       return;
@@ -714,7 +722,7 @@ const main = async () => {
     if (data == "ack_elsewhere") {
       // Hide any user-interaction modals if the action was acknolodged elsewhere, i.e., by aonther frontend.
       setTimeout(async () => {
-        await action_modal.hide();
+        // await loading_modal.hide();
         await asset_location_modal.hide();
         await repair_report_modal.hide();
         await scan_modal.hide();
@@ -725,10 +733,10 @@ const main = async () => {
     }
 
     // Don't continue if the location info modal isn't required.
-    setTimeout(async () => {
-      // Very temporary fix for a race condition
-      await action_modal.hide();
-    }, 300)
+    // setTimeout(async () => {
+    //   // Very temporary fix for a race condition
+    //   await loading_modal.hide();
+    // }, 300)
 
     // Play correct audio for action
     audio_success.play();
@@ -763,7 +771,6 @@ const main = async () => {
     const dom_container_pending = document.getElementById("grid-data-pending");
     dom_container_pending.style.display = "block";
     await hide_clashes();
-    loading_modal.hide();
 
     // Split storage bays into sections (by the storage_type)
     // For example, the A prefixed bays in our installation are 'work-in-progress' this is show the bays can be split correctly.
@@ -841,6 +848,10 @@ const main = async () => {
                   // Waiting for parts - with customer
                   entry_col['status'] = "parts_customer";
                   break;
+                case 102:
+                  // Peer Review Pending
+                  entry_col['status'] = "peer_review";
+                  break;
                 default:
                   // Any other system status
                   entry_col['status'] = "bench";
@@ -882,7 +893,7 @@ const main = async () => {
 
     dom_container.innerHTML = gen_grid(entries)
     dom_container_pending.style.display = "none";
-
+    loading_modal.hide();
   })
 
   socket.on('server_error', async (error) => {
@@ -899,6 +910,14 @@ const main = async () => {
 
   socket.on('busy', async (message) => {
     // Server is busy performing a task, show the loading modal.
+    if (message.startsWith("considering_location_")) {
+      // Get the scan location after the final _
+      const location = message.split("_").pop();
+      console.log(location)
+      await loading_modal.update(`Considering new Bay: ${location}`);
+      return;
+    } 
+
     switch (message) {
       case "fetching":
         loading_modal.update("Fetching Data");
