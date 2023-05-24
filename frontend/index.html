@@ -117,7 +117,7 @@
         </div>
         <div class="modal-body" id="asset-location-modal-body">
           <h5 id="asset-location-modal-status" style="text-align: center;"></h5>
-          <h1 id="asset-location-modal-bay" style="text-align: center;">BAY</h1>
+          <h1 style="text-align: center;"><span id="asset-location-modal-bay" class="badge bg-primary">Pending</span></h1>
           <hr>
           <p id="asset-location-modal-text"></p>
         </div>
@@ -383,6 +383,24 @@
           <hr>
           <h3>Lastest Updates</h3>
           <div class="container">
+          <!-- Updates 24/05/23 -->
+          <div class="row">
+            <div class="col g-2 pt-2">
+              <div class="card card-body">
+                <h5 class="card-title">I Am Speeeeeed, and Free.</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Released 24/05/23</h6>
+                <p class="card-text">
+                  This version greatly improves the speed of PCRT-Scan by introducing the <code>shallow</code> option on <code>format_work_order</code>, which
+                  avoids requesting unnecessary information from the database while loading data from work orders, such as when refreshing the grid layout.
+                  The location chosing algorithm has also been improved, and now exits immediately once a bay has been found, and also uses the <code>shallow</code> feature.
+                  <br>
+                  Additionally, the <code>remove_work_order_location</code> opcode has been implemented, currently represented in the frontend with a <a href="#">Release</a> button
+                  on work orders that have a location assigned. This feature allows an assets location to be "unset" in PCRT, freeing it up for another work order to use.
+                  <b>When using this feature, the asset must actually have been removed from the bay first.</b>
+                </p>
+              </div>
+            </div>
+          </div>
           <!-- Updates 27/04/23 -->
           <div class="row">
             <div class="col g-2 pt-2">
@@ -538,7 +556,7 @@
 
   <nav class="navbar navbar-expand-lg bg-dark" id="navbar" style="display: none;">
     <div class="container-fluid">
-      <a class="navbar-brand text-white" href="#"><i class="bi bi-qr-code-scan"></i> PCRT-Scan</a>
+      <a class="navbar-brand text-white" href="#"><i class="bi bi-qr-code-scan"></i> PCRT-Scan <span class="badge bg-secondary">1.2.4</span></a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>

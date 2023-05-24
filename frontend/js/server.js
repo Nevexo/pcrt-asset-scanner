@@ -330,13 +330,13 @@ class ScanModal {
 
     const open_date = new Date(work_order.open_date);
     this.title.innerHTML = `<i class="bi bi-qr-code"></i> Scanned Work Order - ${work_order.customer.name} (${work_order.customer.id})`;
-    this.items.owner.innerHTML = `Owner: <i class="bi bi-person-fill"></i> ${work_order.customer.name} (${work_order.customer.company})`;
-    this.items.status.innerHTML = `Status: <i class="${state_icons[work_order.status.pcrt_scan_state.name]}"></i> ${work_order.status.name}`;
+    this.items.owner.innerHTML = `Owner: <i class="bi bi-person-fill"></i> ${work_order.customer.name} <span class="badge bg-secondary">${work_order.customer.company}</span>`;
+    this.items.status.innerHTML = `Status: <span class="badge bg-primary"><i class="${state_icons[work_order.status.pcrt_scan_state.name]}"></i> ${work_order.status.name}</span>`;
     this.items.check_in_date.innerHTML = `Check-in Date: <i class="bi bi-calendar-date"></i> ${open_date.toLocaleDateString()} (${moment(open_date).fromNow()})`;
     this.items.problem.innerHTML = `${work_order.problem}`;
 
     if (scan_data.work_order.location != undefined) {
-      this.items.location.innerHTML = `Asset Location: <b>${scan_data.work_order.location.name}</b>`;
+      this.items.location.innerHTML = `Asset Location: <b>${scan_data.work_order.location.name}</b> <a href='#' onclick="release_location('${scan_data.work_order.id}'); return true">Release</a>`;
     } else {
       this.items.location.innerHTML = `Asset Location: <b>Not yet checked-in</b>`;
     }
@@ -357,6 +357,14 @@ class ScanModal {
     if (this.visible) await this.modal.hide()
     this.visible = false;
   };
+}
+
+const release_location = (wo_id) => {
+  socket.emit("remove_work_order_location", wo_id);
+  scan_modal.hide();
+
+  const toast = new ToastAlert();
+  toast.show("Location Released", "The location has been released. Wait.", "success");
 }
 
 const request_refresh = async () => {
@@ -670,7 +678,7 @@ const main = async () => {
     } else if (status.status == "faulted") {
       status_text.innerText = "Not Ready - FAULTED!";
       status_text.className = "text-warning";
-      error_modal.show("bi bi-upc-scan", "Scanner Faulted!", status.message)
+      await error_modal.show("bi bi-upc-scan", "Scanner Faulted!", status.message)
     }
   })
 
@@ -682,9 +690,9 @@ const main = async () => {
 
     if (data.work_order.status.pcrt_scan_state.name == "complete") {
       // Work order is marked complete, show the repair report
-      if (data.work_order.tasks == undefined) {
+      if (data.work_order.tasks == undefined || data.work_order.tasks.length == 0) {
         // No tasks, show an error.
-        error_modal.show("bi bi-exclamation-circle-fill", "Repair Report not Complete!", "No repair report has been added to this work order. Please add one before checking devices out.")
+        await error_modal.show("bi bi-exclamation-circle-fill", "Repair Report not Complete!", "No repair report has been added to this work order. Please add one before checking devices out.")
         return;
       }
       set_repair_report_modal_data(data.work_order, "collected");
