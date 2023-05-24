@@ -106,6 +106,15 @@ class Client {
       })
     })
 
+    client.on("remove_work_order_location", async (data) => {
+      this.logger.debug("Processing remove work order location request...");
+      // Forward to main handler.
+      this.emitter.emit("remove_work_order_location", {
+        "client": client,
+        "data": data
+      })
+    })
+
     // API v3 - frontend-based acks
     client.on("frontend_ack", async (data) => {
       // This event expects a "type" defintion in order to emit the correct response.

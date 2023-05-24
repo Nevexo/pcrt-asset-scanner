@@ -451,6 +451,28 @@ const main = async () => {
     await data.client.emit("daily_report", report);
   })
 
+  client.emitter.on("remove_work_order_location", async (data) => {
+    // Unset the work order location on request from client.
+    logger.debug(`Client requested to remove work order location for ${data.data}`);
+    const calling_client = data.client;
+
+    await database.unset_work_order_location(data.data);
+    await calling_client.emit("wo_location_removed", {
+      "work_order": data.data
+    });
+
+    await client.broadcast_message("storage_state", await database.get_storage_statues())
+
+    // Log the transaction
+    await transaction.log_transaction("work_order_location_change", {
+      "work_order": data.data,
+      "action": "remove"
+    });
+
+    // Notify the client
+    return true;
+  })
+
   client.emitter.on("apply_action", async (data) => {
     await client.broadcast_message("busy", "applying_action");
     const calling_client = data['client'];
@@ -535,7 +557,7 @@ const main = async () => {
         client.broadcast_message("info", {"type": "Warning", "message": `Considering new locations for asset ${woid}`})
 
         const all_locations = await database.get_storage_locations();
-        const asset_locations = await database.get_open_work_orders();
+        // const asset_locations = await database.get_open_work_orders();
 
         let potential_locations = [];
         for (let location in all_locations) {
@@ -554,14 +576,13 @@ const main = async () => {
           logger.debug(`consideration for ${location.name} continued, checking asset location.`)
 
           // Check the location is not in use by another WO
-          if (await database.get_work_order_by_location(location.id) != undefined) continue;
+          // Use shallow check to avoid checking all fields that are not required.
+          if (await database.get_work_order_by_location(location.id, true) == undefined) {
+            logger.debug(`${location.name} chosen for this asset.`)
+            potential_locations.push(location);            
+            break;
+          };
 
-          logger.debug(`${location.name} considered for storage of this asset`)
-
-          // TODO: Potentially abort the check now we have found a bay?
-
-          // Add this location to the potentials list
-          potential_locations.push(location);
         }
 
         if (potential_locations.length == 0) {

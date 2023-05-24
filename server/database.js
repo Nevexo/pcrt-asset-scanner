@@ -124,14 +124,22 @@ class Database {
     return states;
   }
 
-  async format_work_order(wo) {
+  async format_work_order(wo, shallow=false) {
     const states = await this.get_asset_states();
     const locations = await this.get_storage_locations()
 
-    // TODO: Refactor this, requesting notes and labour should not be done here.
-    const notes = await this.get_public_notes(wo.woid);
-    const internal_notes = await this.get_private_notes(wo.woid);
-    const labour = await this.get_job_labour(wo.woid);
+    let notes, internal_notes, labour = [];
+    if (!shallow) { 
+      notes = await this.get_public_notes(wo.woid); 
+    }
+
+    if (!shallow) {
+      internal_notes = await this.get_private_notes(wo.woid);
+    
+    }
+    if (!shallow) {
+      labour = await this.get_job_labour(wo.woid);
+    } 
 
     let work_order = {"type": "work_order", "payload":
     {
@@ -149,7 +157,7 @@ class Database {
     return work_order
   }
 
-  async get_work_order_by_location(slid) {
+  async get_work_order_by_location(slid, shallow = false) {
     // Get work order from storage location
     this.logger.debug(`getting work order in location ${slid}`)
 
@@ -189,7 +197,7 @@ class Database {
       throw new Error("overallocated_bay");
     }
 
-    return this.format_work_order(result[0]);
+    return this.format_work_order(result[0], shallow);
   }
 
   async get_work_order(woid) {
@@ -244,7 +252,7 @@ class Database {
 
     let work_orders = [];
     for (let wo in result) {
-      work_orders.push(await this.format_work_order(result[wo]))
+      work_orders.push(await this.format_work_order(result[wo], true))
     }
 
     return work_orders
@@ -273,6 +281,18 @@ class Database {
     this.logger.debug(`setting ${woid} location to ${slid}`)
 
     await this.connection.query(`UPDATE pc_wo SET slid = ${mysql.escape(slid)} WHERE woid = ${mysql.escape(woid)}`).catch(error => {
+      this.logger.error(error);
+      return false;
+    });
+
+    return true;
+  }
+
+  async unset_work_order_location(woid) {
+    // Unset a work order location.
+    this.logger.debug(`unsetting ${woid} location`)
+
+    await this.connection.query(`UPDATE pc_wo SET slid = NULL WHERE woid = ${mysql.escape(woid)}`).catch(error => {
       this.logger.error(error);
       return false;
     });
