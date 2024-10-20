@@ -1,3 +1,8 @@
+> NOTE: I no longer work for the company this application
+> was written for, and as such, don't have a use for the system,
+> or access to a PCRT server to test uodates again. 
+> This repository will be archived. 
+
 # PCRT Asset Scan System (PCRT-Scan)
 
 ![Christmas-theme screenshot of PCRT Scan Frontend](assets/xmas_screenshot.jpg)
