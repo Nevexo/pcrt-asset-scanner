@@ -1,6 +1,6 @@
 > NOTE: I no longer work for the company this application
 > was written for, and as such, don't have a use for the system,
-> or access to a PCRT server to test uodates again. 
+> or access to a PCRT server to test updates against. 
 > This repository will be archived. 
 
 # PCRT Asset Scan System (PCRT-Scan)
